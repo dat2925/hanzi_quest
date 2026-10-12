@@ -6,7 +6,11 @@ ZIP không chứa sách gốc `Han 1 TV.pdf`; các tham chiếu trang sách tron
 
 ## Kiểm tra ngay, không cần SQL
 
-Sau khi Render deploy commit mới, mở **Hành trình → Xem thử Bài 1A · 你好 – Xin chào**. Đi hết 7 màn trên điện thoại và máy tính:
+Sau khi Render deploy, mở **Hành trình → Bài 1A · 你好 – Xin chào**. Khi đã đăng nhập và Supabase trả về bài đã xuất bản, bấm **Học ngay** để học thật và lưu XP/tiến độ/SRS bằng cơ chế đồng bộ hiện có. Có thể chọn **HanziOne · Quyển 1 → Bài 1 · Chào hỏi → Học ngay** ngay trong danh sách bài của chương, không cần tìm lại bài ở lộ trình bên dưới.
+
+Nếu chưa có bản xuất bản hiển thị, ứng dụng cung cấp **Xem thử Bài 1A** từ bản nội dung kèm ứng dụng, không lưu tiến độ. RLS không cho học viên đọc draft nên kết quả rỗng không khẳng định bài đang draft. Lỗi hoặc truy vấn chưa xong được hiển thị riêng, không kết luận “đang chờ duyệt” và không mở bài từ cache thay cho kết quả truy vấn. Có nút tải lại trạng thái. Bản không đăng nhập được ghi rõ chưa kiểm tra Supabase. Bản sửa trạng thái giao diện không cần migration hoặc sửa dữ liệu production.
+
+Đi hết 7 màn trên điện thoại và máy tính:
 
 1. Mục tiêu, tình huống gặp bạn mới, chữ Hán và Pinyin là gì.
 2. Ba mục từ: 你, 好, 你好; nghe thường/chậm và ẩn Pinyin.

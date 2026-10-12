@@ -8,6 +8,7 @@ import {
 export async function loadCurriculum(
   courseId = "beginner-v1",
   chapterId?: string,
+  lessonId?: string,
 ) {
   if (!supabase)
     throw new CurriculumError("request", "Supabase client chưa được cấu hình.");
@@ -20,6 +21,7 @@ export async function loadCurriculum(
     .eq("units.course_id", courseId)
     .order("sort_order");
   if (chapterId) query = query.eq("unit_id", chapterId);
+  if (lessonId) query = query.eq("id", lessonId);
   // Page to avoid PostgREST default row caps; one chapter/course only.
   const rows: unknown[] = [];
   for (let from = 0; ; from += 100) {

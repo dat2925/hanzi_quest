@@ -907,6 +907,12 @@ export default function App() {
               <CourseBrowser
                 cloud={!!account.manager}
                 onLoaded={() => refreshCurriculum((n) => n + 1)}
+                onStudy={(lesson) =>
+                  canStudy(p, lesson, lessons)
+                    ? start(lesson)
+                    : setPreview(lesson)
+                }
+                isUnlocked={(lesson) => canStudy(p, lesson, lessons)}
               />
               <div className="path-layout">
                 <section className="path-map">

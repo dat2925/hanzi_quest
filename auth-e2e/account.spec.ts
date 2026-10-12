@@ -326,13 +326,10 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
     await page.getByRole("combobox").selectOption("hanzione-book1-preview");
     await page.getByRole("button", { name: /^Bài 1 · Chào hỏi/ }).click();
     await page
-      .getByRole("button", {
-        name: /Quyển 1 · Bài 1A: 你好 – Xin chào — Có thể học/,
-      })
+      .getByRole("region", { name: "Danh sách bài trong chương" })
+      .getByRole("button", { name: "Học ngay", exact: true })
       .click();
-    await page
-      .getByRole("button", { name: "Bắt đầu học", exact: true })
-      .click();
+    await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
     for (let i = 0; i < 3; i++)
       await page
         .getByRole("dialog")

@@ -2,9 +2,9 @@ import Game from "../Game";
 import { validateBundle, type Bundle } from "./schema";
 import { compileBundle } from "./adapter";
 import type { Lesson } from "../data";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { beginner } from "./demo";
-import { lesson1a } from "./book1";
+import { book1, lesson1a } from "./book1";
 import {
   loadCourseIndex,
   loadChapterIndex,
@@ -13,9 +13,13 @@ import {
 export function CourseBrowser({
   cloud,
   onLoaded,
+  onStudy,
+  isUnlocked,
 }: {
   cloud: boolean;
   onLoaded: () => void;
+  onStudy: (lesson: Lesson) => void;
+  isUnlocked: (lesson: Lesson) => boolean;
 }) {
   const [courses, setCourses] = useState([
     {
@@ -30,55 +34,155 @@ export function CourseBrowser({
   const [previewBundle, setPreviewBundle] = useState<Bundle>();
   const [preview, setPreview] = useState<Lesson>();
   const [busy, setBusy] = useState(false);
+  const [indexStatus, setIndexStatus] = useState("");
+  const [chapterStatus, setChapterStatus] = useState("");
+  const [chapterLessons, setChapterLessons] = useState<Lesson[]>([]);
+  const [selectedChapter, setSelectedChapter] = useState("");
+  const chapterRequest = useRef(0);
+  const [featured, setFeatured] = useState<
+    | { status: "local" | "loading" | "unavailable" | "error" }
+    | { status: "published"; lesson: Lesson }
+  >({ status: cloud ? "loading" : "local" });
+  const [retry, setRetry] = useState(0);
+  const loadedRef = useRef(onLoaded);
+  loadedRef.current = onLoaded;
   useEffect(() => {
     let active = true;
+    setFeatured({ status: cloud ? "loading" : "local" });
     if (cloud)
+      loadCurriculum(book1.courseId, lesson1a.learning!.chapterId, lesson1a.id)
+        .then((rows) => {
+          if (!active) return;
+          const lesson = rows.find((l) => l.id === lesson1a.id);
+          setFeatured(
+            lesson
+              ? { status: "published", lesson }
+              : { status: "unavailable" },
+          );
+          if (lesson) loadedRef.current();
+        })
+        .catch(() => {
+          if (active) setFeatured({ status: "error" });
+        });
+    return () => {
+      active = false;
+    };
+  }, [cloud, retry]);
+  useEffect(() => {
+    let active = true;
+    if (cloud) {
+      setIndexStatus("Đang tải danh sách khóa…");
       loadCourseIndex()
         .then((x) => {
           if (active) {
             setCourses(x);
-            if (!x.some((c) => c.id === beginner.courseId)) {
-              setCourse(x[0]?.id || beginner.courseId);
-              setError(
-                "Giáo trình nhập môn chưa được nhập. Quản trị viên cần chạy migrations 004 và 005; tiến độ và kho bài mẫu vẫn được giữ nguyên.",
-              );
-            }
+            setIndexStatus(
+              x.length
+                ? ""
+                : "Chưa có khóa đã xuất bản hiển thị cho tài khoản này.",
+            );
+            setCourse((current) =>
+              x.some((c) => c.id === current) ? current : x[0]?.id || "",
+            );
           }
         })
         .catch(() => {
-          if (active) setError("Chưa tải được danh sách khóa.");
+          if (active) {
+            setCourses([]);
+            setIndexStatus("Không tải được danh sách khóa. Hãy thử tải lại.");
+          }
         });
+    }
     return () => {
       active = false;
     };
-  }, [cloud]);
+  }, [cloud, retry]);
   useEffect(() => {
     let active = true;
-    if (cloud)
+    chapterRequest.current++;
+    setBusy(false);
+    setChapterLessons([]);
+    setSelectedChapter("");
+    if (cloud) {
+      setChapters([]);
+      if (!course) {
+        setChapterStatus("Chọn một khóa đã xuất bản để xem chương.");
+        return;
+      }
+      setChapterStatus("Đang tải danh sách chương…");
       loadChapterIndex(course)
         .then((x) => {
-          if (active) setChapters(x);
+          if (active) {
+            setChapters(x);
+            setChapterStatus(
+              x.length
+                ? "Chọn chương để xem bài học."
+                : "Chưa có chương hiển thị trong khóa này.",
+            );
+          }
         })
         .catch(() => {
-          if (active) setError("Chưa tải được danh sách chương.");
+          if (active)
+            setChapterStatus(
+              "Không tải được danh sách chương. Hãy thử tải lại.",
+            );
         });
+    }
     return () => {
       active = false;
+      chapterRequest.current++;
     };
-  }, [course, cloud]);
+  }, [course, cloud, retry]);
   return (
     <section className="card curriculum-browser">
       <h2>Giáo trình cho người mới</h2>
-      <div className="note-box">
-        <h3>Quyển 1 · Bài 1A đang chờ duyệt</h3>
+      <section className="note-box" aria-label="Bài 1A">
+        <h3>Bài 1A · 你好 – Xin chào</h3>
         <p>
           Bảy màn học: hiểu lời chào, từ mới, nghe nói, tự nhớ, viết vào vở,
-          kiểm tra và ôn tập. Bản xem trước không lưu dữ liệu.
+          kiểm tra và ôn tập.
         </p>
-        <button className="secondary" onClick={() => setPreview(lesson1a)}>
-          Xem thử Bài 1A · 你好 – Xin chào
-        </button>
-      </div>
+        {featured.status === "published" ? (
+          <>
+            <p>Đã xuất bản · Kết quả học được lưu vào tài khoản.</p>
+            <button
+              className="primary"
+              onClick={() => onStudy(featured.lesson)}
+            >
+              {isUnlocked(featured.lesson)
+                ? "Học ngay"
+                : "Xem điều kiện mở khóa"}
+            </button>
+          </>
+        ) : featured.status === "loading" ? (
+          <p role="status">Đang kiểm tra bản xuất bản trên Supabase…</p>
+        ) : featured.status === "error" ? (
+          <>
+            <p role="status">
+              Không tải được trạng thái Bài 1A từ Supabase. Chưa xác định được
+              bài đã xuất bản hay chưa.
+            </p>
+            <button
+              className="secondary"
+              onClick={() => setRetry((n) => n + 1)}
+            >
+              Thử tải lại
+            </button>
+          </>
+        ) : (
+          <>
+            <p>
+              {featured.status === "local"
+                ? "Bản xem thử kèm ứng dụng. Chưa kiểm tra trạng thái Supabase; đăng nhập để tải bài đã xuất bản."
+                : "Chưa có bản xuất bản hiển thị cho tài khoản này. Bạn có thể xem thử bản nội dung kèm ứng dụng."}{" "}
+              Xem thử không lưu tiến độ, XP hoặc lịch ôn.
+            </p>
+            <button className="secondary" onClick={() => setPreview(lesson1a)}>
+              Xem thử Bài 1A · 你好 – Xin chào
+            </button>
+          </>
+        )}
+      </section>
       <p>
         Chọn khóa và phiên bản giáo trình. Các chương chưa có bài được để trống
         để chờ nội dung đã duyệt.
@@ -93,15 +197,26 @@ export function CourseBrowser({
           ))}
         </select>
       </label>
+      <p role="status">{indexStatus}</p>
+      {cloud && (
+        <button className="text-button" onClick={() => setRetry((n) => n + 1)}>
+          Tải lại trạng thái giáo trình
+        </button>
+      )}
       <div className="chapter-grid">
         {chapters.map((c) => (
           <button
             className="secondary"
             disabled={busy}
             key={c.id}
+            aria-pressed={selectedChapter === c.id}
             onClick={async () => {
               if (!cloud) {
-                setError(
+                setChapterLessons(
+                  c.id === "beginner-intro" ? [compileBundle(beginner)[0]] : [],
+                );
+                setSelectedChapter(c.id);
+                setChapterStatus(
                   c.id === "beginner-intro"
                     ? "Bài nhập môn đã sẵn sàng bên dưới."
                     : "Chương này đang chờ nội dung.",
@@ -109,19 +224,27 @@ export function CourseBrowser({
                 return;
               }
               setBusy(true);
-              setError("");
+              setSelectedChapter(c.id);
+              setChapterLessons([]);
+              setChapterStatus("");
+              const request = ++chapterRequest.current;
               try {
                 const x = await loadCurriculum(course, c.id);
-                setError(
+                if (request !== chapterRequest.current) return;
+                setChapterLessons(x);
+                setChapterStatus(
                   x.length
                     ? `Đã tải ${x.length} bài của ${c.title}.`
-                    : "Chương này đang chờ nội dung.",
+                    : "Chưa có bài đã xuất bản hiển thị trong chương này.",
                 );
                 onLoaded();
               } catch {
-                setError("Không tải được chương. Hãy thử lại.");
+                if (request === chapterRequest.current)
+                  setChapterStatus(
+                    "Không tải được bài trong chương. Hãy chọn lại chương để thử lại.",
+                  );
               } finally {
-                setBusy(false);
+                if (request === chapterRequest.current) setBusy(false);
               }
             }}
           >
@@ -130,7 +253,19 @@ export function CourseBrowser({
           </button>
         ))}
       </div>
-      <p role="status">{busy ? "Đang tải chương…" : error}</p>
+      <p role="status">{busy ? "Đang tải bài trong chương…" : chapterStatus}</p>
+      <div role="region" aria-label="Danh sách bài trong chương">
+        {chapterLessons.map((l) => (
+          <article key={l.id}>
+            <h3>{l.title}</h3>
+            <p>{l.description}</p>
+            <button className="primary" onClick={() => onStudy(l)}>
+              {isUnlocked(l) ? "Học ngay" : "Xem điều kiện mở khóa"}
+            </button>
+          </article>
+        ))}
+      </div>
+      <p role="status">{error}</p>
       <details className="curriculum-preview">
         <summary>Xem trước giáo trình JSON (không lưu tiến độ)</summary>
         <p>
