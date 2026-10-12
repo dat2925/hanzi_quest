@@ -5,7 +5,7 @@ import {
 } from "@modelcontextprotocol/client";
 const client = new Client({ name: "hanzi-quest-test", version: "1.0.0" });
 await client.connect(
-  new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8787/mcp")),
+  new StreamableHTTPClientTransport(new URL((process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:8787")+"/mcp")),
 );
 const tools = await client.listTools();
 assert.equal(tools.tools.length, 3);

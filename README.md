@@ -2,6 +2,10 @@
 
 Ứng dụng React + TypeScript dành cho người Việt, với giao diện xanh lá/kem, linh vật Bao được vẽ riêng bằng SVG và trải nghiệm standalone hoặc MCP Apps.
 
+## Tài khoản Supabase
+
+Xem [SETUP_SUPABASE.md](SETUP_SUPABASE.md) để chạy migrations, cấu hình email/password, redirect, biến môi trường và triển khai Render. Không có credentials trong repository. Khi chưa cấu hình, app giữ chế độ local; khi cấu hình sẽ có Auth, cache/queue theo tài khoản và RPC đồng bộ. Chưa xác nhận hoạt động với project Supabase/SMTP hoặc ChatGPT thật.
+
 ## Chạy ứng dụng
 
 Yêu cầu Node.js 22+.
@@ -26,7 +30,7 @@ Chế độ phát triển có hot reload: `npm run dev`, mở http://127.0.0.1:5
 - SRS: từ đúng ôn sau 1, 2, 4, 8… ngày, tối đa 30 ngày; từ sai sau 10 phút. Trong một phiên, một từ sai được ưu tiên ôn sớm dù những câu khác đúng.
 - Sổ tay, từ khó, tìm từ, ngữ pháp, ghi chú tự lưu, lịch sử và checklist luyện viết theo ngày.
 - Thống kê, dark mode, giảm chuyển động theo thiết bị, điều hướng bàn phím, giữ focus trong hộp thoại.
-- Tiến độ LocalStorage có xác thực Zod; xuất bản sao JSON trong Cài đặt.
+- Tiến độ LocalStorage có xác thực Zod; xuất bản sao JSON trong Cài đặt. Tài khoản Supabase dùng PostgreSQL làm nguồn chính, queue offline và checkpoint; dữ liệu local cũ chỉ chuyển sau khi xem trước/xác nhận.
 
 ## Kiến trúc
 

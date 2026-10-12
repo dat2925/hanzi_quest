@@ -1,4 +1,17 @@
 import { App as McpApp } from "@modelcontextprotocol/ext-apps";
+export async function openStandalone(url: string) {
+  if (window.parent === window) {
+    window.location.assign(url);
+    return;
+  }
+  const app = new McpApp({ name: "Hanzi Quest Auth", version: "1.0.0" }, {});
+  try {
+    await app.connect();
+    await app.openLink({ url });
+  } finally {
+    await app.close();
+  }
+}
 export async function connectHost(
   onLesson: (id: string) => void,
   onTheme: (dark: boolean) => void,

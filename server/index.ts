@@ -24,6 +24,9 @@ export function makeServer() {
           ui: {
             prefersBorder: false,
             csp: {
+              connectDomains: process.env.VITE_SUPABASE_URL
+                ? [new URL(process.env.VITE_SUPABASE_URL).origin]
+                : [],
               resourceDomains: [
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
@@ -40,7 +43,7 @@ export function makeServer() {
     {
       title: "Open Hanzi Quest",
       description:
-        "Open the Vietnamese-language Chinese learning application. Progress is browser-local and not available to this server.",
+        "Open the Vietnamese-language Chinese learning application. Account progress is private to the authenticated UI and not available to this public MCP server.",
       inputSchema: z.object({}),
       annotations: {
         readOnlyHint: true,
@@ -53,7 +56,7 @@ export function makeServer() {
       content: [
         {
           type: "text" as const,
-          text: "Hanzi Quest mở ra hành trình 10 bài mẫu từ nhập môn đến HSK 3. Tiến độ lưu ở trình duyệt; server không đọc hoặc tự đánh dấu hoàn thành.",
+          text: "Hanzi Quest mở ra hành trình 10 bài mẫu từ nhập môn đến HSK 3. UI hỗ trợ tài khoản Supabase khi được cấu hình; MCP server không đọc dữ liệu cá nhân hoặc tự đánh dấu hoàn thành.",
         },
       ],
       structuredContent: {
@@ -125,7 +128,7 @@ export function makeServer() {
   );
   return server;
 }
-const port = Number(process.env.MCP_PORT || 8787);
+const port = Number(process.env.PORT || process.env.MCP_PORT || 8787);
 const http = createServer(async (req, res) => {
   const pathname = new URL(req.url || "/", `http://localhost:${port}`).pathname;
   if (req.method === "GET" && pathname === "/health") {
@@ -172,8 +175,11 @@ const http = createServer(async (req, res) => {
       pathname === "/mcp" ? "Stateless MCP: POST requests only" : "Not found",
     );
 });
-http.listen(port, "127.0.0.1", () =>
-  console.log(
-    `Hanzi Quest: http://127.0.0.1:${port} · MCP: http://127.0.0.1:${port}/mcp`,
-  ),
+http.listen(
+  port,
+  process.env.HOST || (process.env.PORT ? "0.0.0.0" : "127.0.0.1"),
+  () =>
+    console.log(
+      `Hanzi Quest: http://127.0.0.1:${port} · MCP: http://127.0.0.1:${port}/mcp`,
+    ),
 );

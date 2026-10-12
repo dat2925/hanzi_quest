@@ -48,6 +48,13 @@ import {
 import Game, { speak, WritingPad } from "./Game";
 import { Panda, Landscape } from "./Art";
 import { connectHost } from "./bridge";
+import { useAccount, AccountSettings, SyncBanner } from "./cloud/Account";
+import {
+  patchOperations,
+  operation,
+  finishOperation,
+} from "./cloud/operations";
+import type { GameSnapshot } from "./game-state";
 const nav = [
   { id: "home", label: "Tổng quan", icon: Home },
   { id: "path", label: "Hành trình", icon: Map },
@@ -55,7 +62,6 @@ const nav = [
   { id: "notebook", label: "Sổ tay", icon: BookOpen },
   { id: "stats", label: "Thống kê", icon: BarChart3 },
 ];
-const ids = lessons.map((l) => l.id);
 function Meter({ value, max = 100 }: { value: number; max?: number }) {
   return (
     <div className="progress">
@@ -84,7 +90,17 @@ function SectionTitle({
   );
 }
 export default function App() {
-  const [p, setP] = useState(load);
+  const ids = lessons.map((l) => l.id);
+  const account = useAccount();
+  const manager = account.manager;
+  const [p, setP] = useState(() => (manager ? manager.progress : load()));
+  const [resume, setResume] = useState<GameSnapshot | undefined>();
+  useEffect(() => {
+    if (manager) setP(manager.progress);
+  }, [manager?.progress]);
+  useEffect(() => {
+    if (manager && !manager.progress.onboarded) setOnboard(true);
+  }, [manager]);
   const [page, setPage] = useState("home");
   const [game, setGame] = useState<Lesson | null>(null);
   const [practice, setPractice] = useState(false);
@@ -101,7 +117,16 @@ export default function App() {
   const [writeMode, setWriteMode] = useState(false);
   const [now, setNow] = useState(Date.now());
   function patch(next: Partial<Progress>) {
-    setP((old) => ({ ...old, ...next }));
+    try {
+      if (manager) manager.enqueue(patchOperations(p, next));
+      const updated = { ...p, ...next };
+      setP(updated);
+      manager?.setLocal(updated);
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Không lưu được thay đổi.",
+      );
+    }
   }
   useEffect(() => {
     if (!onboard && !preview && !game) return;
@@ -162,7 +187,7 @@ export default function App() {
   }, [onboard, preview, game]);
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+      if (!manager) localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
     } catch {
       setMessage(
         "Không lưu được tiến độ trên trình duyệt này. Hãy xuất dữ liệu trong Cài đặt.",
@@ -210,6 +235,7 @@ export default function App() {
       )
     : 0;
   function start(lesson: Lesson, isPractice = false) {
+    setResume(undefined);
     setPreview(null);
     setPractice(isPractice);
     setGame(lesson);
@@ -253,11 +279,18 @@ export default function App() {
             : words.slice(0, 6);
     let qs =
       kind === "Thanh điệu"
-        ? lessons[2].questions
+        ? lessons.find((l) => l.id === "tones")!.questions
         : kind === "Sắp xếp câu"
-          ? [lessons[0].questions[3], lessons[6].questions[1]]
+          ? ["hello", "hsk1"].flatMap(
+              (id) =>
+                lessons
+                  .find((l) => l.id === id)
+                  ?.questions.filter((q) => q.type === "sentence") || [],
+            )
           : kind === "Ghép cặp"
-            ? [lessons[0].questions[2]]
+            ? lessons
+                .flatMap((l) => l.questions.filter((q) => q.type === "match"))
+                .slice(0, 1)
             : selected.map((w) => ({
                 type: kind === "Nghe" ? ("listen" as const) : ("quiz" as const),
                 prompt:
@@ -319,14 +352,25 @@ export default function App() {
     a: number,
     seconds: number,
     answers: { hanzi: string; correct: boolean }[],
+    state: GameSnapshot,
   ) {
     if (!game) return;
-    setP((old) => {
-      const result = complete(old, game.id, a, seconds, answers);
-      result.written = [...new Set([...old.written, dateKey()])];
-      if (practice || a < 0.7) result.completed = old.completed;
-      return result;
-    });
+    try {
+      manager?.enqueue([finishOperation(state, seconds)]);
+      const result = complete(p, game.id, a, seconds, answers);
+      result.written = [...new Set([...p.written, dateKey()])];
+      if (practice || a < 0.7) result.completed = p.completed;
+      setP(result);
+      manager?.setLocal(
+        result,
+        manager.stages.filter((s) => s.sessionId !== state.sessionId),
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Không lưu được kết quả.",
+      );
+      return false;
+    }
     setGame(null);
     setNow(Date.now());
     setMessage(
@@ -449,6 +493,23 @@ export default function App() {
           </div>
         </header>
         <main>
+          <SyncBanner />
+          {manager?.stages[0] && !game && (
+            <div className="resume-banner card">
+              <p>Bạn có màn chơi đang dở: {manager.stages[0].lesson.title}.</p>
+              <button
+                className="secondary"
+                onClick={() => {
+                  const state = manager.stages[0];
+                  setResume(state);
+                  setPractice(state.practice);
+                  setGame(state.lesson);
+                }}
+              >
+                Tiếp tục màn đang học
+              </button>
+            </div>
+          )}
           {page === "home" && (
             <>
               <div className="page-heading">
@@ -799,8 +860,8 @@ export default function App() {
                     <div>
                       <b>Rừng tre khởi đầu</b>
                       <span>
-                        10 chặng khám phá · {p.completed.length} chặng hoàn
-                        thành
+                        {lessons.length} chặng khám phá · {p.completed.length}{" "}
+                        chặng hoàn thành
                       </span>
                     </div>
                     <span className="level-pill">{p.goal}</span>
@@ -1225,7 +1286,11 @@ export default function App() {
                       onChange={(e) => patch({ notes: e.target.value })}
                       placeholder="Hôm nay mình nhận ra…"
                     />
-                    <small>Tự động lưu trên thiết bị này.</small>
+                    <small>
+                      {manager
+                        ? "Tự lưu sau khoảng 800 ms; xem trạng thái đồng bộ ở đầu trang."
+                        : "Tự động lưu trên thiết bị này."}
+                    </small>
                   </section>
                 </section>
                 <aside className="card notebook-checklist">
@@ -1272,7 +1337,7 @@ export default function App() {
                   { label: "Kinh nghiệm", value: `${p.xp} XP`, icon: Zap },
                   {
                     label: "Bài hoàn thành",
-                    value: `${p.completed.length}/10`,
+                    value: `${p.completed.length}/${lessons.length}`,
                     icon: BookOpen,
                   },
                   {
@@ -1385,6 +1450,7 @@ export default function App() {
                 text="Một không gian thoải mái giúp hành trình bền bỉ hơn."
               />
               <section className="card settings-card">
+                <AccountSettings />
                 <h3>Hồ sơ & mục tiêu</h3>
                 <div className="setting-row">
                   <div>
@@ -1433,8 +1499,10 @@ export default function App() {
                 </div>
                 <h3>Dữ liệu học tập</h3>
                 <p>
-                  Tiến độ lưu trên trình duyệt này, chưa đồng bộ tài khoản. Giờ
-                  học là mục tiêu cá nhân, chưa gửi thông báo tự động.
+                  {manager
+                    ? "Supabase lưu tiến độ tài khoản; máy này giữ bộ nhớ đệm và hàng đợi khi mất mạng."
+                    : "Tiến độ lưu trên trình duyệt này, chưa đồng bộ tài khoản."}{" "}
+                  Giờ học là mục tiêu cá nhân, chưa gửi thông báo tự động.
                 </p>
                 <button
                   className="secondary"
@@ -1453,7 +1521,7 @@ export default function App() {
                   <Download size={16} /> Xuất tiến độ JSON
                 </button>
                 <p className="muted">
-                  Phiên bản nền tảng · 10 bài mẫu · Cầu nối MCP Apps{" "}
+                  {lessons.length} bài học · Cầu nối MCP Apps{" "}
                   {host ? "đã kết nối host" : "chưa kết nối host"}
                 </p>
               </section>
@@ -1550,6 +1618,28 @@ export default function App() {
           lesson={game}
           sound={p.sound}
           practice={practice}
+          resume={resume}
+          onState={
+            manager
+              ? (state) => {
+                  try {
+                    manager.enqueue([operation("stage", state)]);
+                    manager.setLocal(manager.progress, [
+                      state,
+                      ...manager.stages.filter(
+                        (s) => s.lesson.id !== state.lesson.id,
+                      ),
+                    ]);
+                  } catch (error) {
+                    setMessage(
+                      error instanceof Error
+                        ? error.message
+                        : "Không lưu được màn chơi.",
+                    );
+                  }
+                }
+              : undefined
+          }
           onClose={() => setGame(null)}
           onComplete={finish}
         />
@@ -1670,8 +1760,8 @@ function Onboarding({
               ))}
             </div>
             <div className="note-box">
-              Bản hiện tại có 10 bài nền tảng và bài mẫu HSK 1–3. Bạn có thể đổi
-              mục tiêu bất cứ lúc nào.
+              Bản hiện tại có {lessons.length} bài nền tảng và bài mẫu HSK 1–3.
+              Bạn có thể đổi mục tiêu bất cứ lúc nào.
             </div>
           </>
         ) : (

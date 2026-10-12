@@ -29,3 +29,7 @@ Thumbs.db
 .vscode/
 *.tmp
 *.bak
+*.dump
+*.backup
+supabase/.temp/
+supabase/.branches/

@@ -1,4 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;600;700&display=swap");
+.auth-shell { min-height:100dvh; display:grid; place-items:center; padding:24px; background:var(--bg); color:var(--text); }
+.auth-card { width:min(100%,440px); padding:28px; }
+.auth-card > svg { width:120px; height:120px; margin:auto; display:block; }
+.auth-card form, .auth-card label, .auth-links { display:grid; gap:12px; }
+.auth-card label { gap:6px; }
+.auth-card input { width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); }
+.auth-card button { min-height:44px; }
+.auth-card .primary, .auth-card .secondary, .auth-card .text-button { font-size:14px; }
+.auth-links { margin-top:20px; }
+.sync-banner, .resume-banner { padding:12px 16px; margin-bottom:16px; border:1px solid var(--line); border-radius:14px; background:var(--soft); overflow-wrap:anywhere; }
+.sync-banner.error, .sync-banner.conflict { border-color:#d99942; }
+.sync-banner span { display:block; }
+.account-settings { border-bottom:1px solid var(--line); margin-bottom:24px; padding-bottom:20px; }
+.account-settings > button, .account-settings .note-box button, .sync-banner button { margin:4px; }
+.account-settings .note-box { display:block; margin-top:16px; }
 :root {
   font-family: "Be Vietnam Pro", "Segoe UI", sans-serif;
   color: #283e31;

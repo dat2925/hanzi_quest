@@ -85,7 +85,7 @@ const greeting: Question[] = [
       "我 (tôi) + 是 (là) + 学生 (học sinh). Tiếng Trung không chia động từ theo ngôi.",
   },
 ];
-export const lessons: Lesson[] = [
+export let lessons: Lesson[] = [
   {
     id: "hello",
     title: "你好! Xin chào, tiếng Trung",
@@ -341,7 +341,7 @@ export const lessons: Lesson[] = [
     minutes: 15,
   },
 ];
-export const stages = [
+export let stages = [
   "Làm quen với tiếng Trung",
   "Khám phá Pinyin",
   "Bốn thanh điệu",
@@ -353,8 +353,17 @@ export const stages = [
   "Các chủ đề HSK 3",
   "Ôn tập tổng hợp",
 ];
-export const allWords = [
+export let allWords = [
   ...new Map(
     [...words, ...lessons.flatMap((l) => l.words)].map((w) => [w.hanzi, w]),
   ).values(),
 ];
+export function installCurriculum(content: Lesson[]) {
+  lessons = content;
+  stages = content.map((l) => l.title);
+  allWords = [
+    ...new Map(
+      content.flatMap((l) => l.words).map((w) => [w.hanzi, w]),
+    ).values(),
+  ];
+}

@@ -11,6 +11,7 @@ import {
 import type { Lesson, Question } from "./data";
 import { Panda } from "./Art";
 import { shuffle, assessedWords } from "./engine";
+import { newGame, type GameSnapshot } from "./game-state";
 export function speak(
   text: string,
   enabled = true,
@@ -165,6 +166,8 @@ export default function Game({
   onClose,
   onComplete,
   practice = false,
+  resume,
+  onState,
 }: {
   lesson: Lesson;
   sound: boolean;
@@ -173,32 +176,78 @@ export default function Game({
     accuracy: number,
     seconds: number,
     answers: { hanzi: string; correct: boolean }[],
-  ) => void;
+    state: GameSnapshot,
+  ) => void | boolean;
   practice?: boolean;
+  resume?: GameSnapshot;
+  onState?: (state: GameSnapshot) => void;
 }) {
-  const [step, setStep] = useState(-1);
-  const [selection, setSelection] = useState("");
-  const [tokens, setTokens] = useState<number[]>([]);
-  const [feedback, setFeedback] = useState<boolean | null>(null);
-  const [score, setScore] = useState(0);
-  const [results, setResults] = useState<{ hanzi: string; correct: boolean }[]>(
-    [],
+  const [base] = useState(
+    () =>
+      resume ||
+      newGame(
+        lesson,
+        practice,
+        lesson.questions.map((q) => ({ ...q, options: shuffle(q.options) })),
+      ),
   );
-  const [wrote, setWrote] = useState(false);
+  const [step, setStep] = useState(base.step);
+  const [selection, setSelection] = useState(base.selection);
+  const [tokens, setTokens] = useState<number[]>(base.tokens);
+  const [feedback, setFeedback] = useState<boolean | null>(base.feedback);
+  const [score, setScore] = useState(base.score);
+  const [results, setResults] = useState<{ hanzi: string; correct: boolean }[]>(
+    base.results,
+  );
+  const [wrote, setWrote] = useState(base.wrote);
   const [audioError, setAudioError] = useState("");
-  const [assisted, setAssisted] = useState(false);
-  const start = useRef(Date.now());
+  const [assisted, setAssisted] = useState(base.assisted);
+  const [responses, setResponses] = useState(base.responses);
+  const start = useRef(base.startedAt);
   const committed = useRef(false);
   const finishRef = useRef<HTMLButtonElement>(null);
-  const [questions] = useState(() =>
-    lesson.questions.map((q) => ({ ...q, options: shuffle(q.options) })),
-  );
+  const [questions] = useState(() => base.questions);
+  const onStateRef = useRef(onState);
+  onStateRef.current = onState;
+  const snapshot: GameSnapshot = {
+    ...base,
+    step,
+    selection,
+    tokens,
+    feedback,
+    score,
+    results,
+    wrote,
+    assisted,
+    responses,
+    questions,
+  };
+  useEffect(() => {
+    onStateRef.current?.({
+      ...base,
+      step,
+      selection,
+      tokens,
+      feedback,
+      score,
+      results,
+      wrote,
+      assisted,
+      responses,
+      questions,
+    });
+  }, [step, feedback, score, results, wrote, responses]);
   const q = questions[step];
   const writing = step === lesson.questions.length;
   const finished = step > lesson.questions.length;
   function check() {
     if (!selection) return;
     const correct = selection === q.answer && !assisted;
+    setResponses((old) => {
+      const next = [...old];
+      next[step] = { selection, assisted };
+      return next;
+    });
     setFeedback(correct);
     if (correct) setScore((x) => x + 1);
     const assessed = assessedWords(q, lesson.words);
@@ -437,11 +486,13 @@ export default function Game({
               onClick={() => {
                 if (committed.current) return;
                 committed.current = true;
-                onComplete(
+                const saved = onComplete(
                   score / lesson.questions.length,
                   (Date.now() - start.current) / 1000,
                   results,
+                  snapshot,
                 );
+                if (saved === false) committed.current = false;
               }}
             >
               Lưu kết quả & tiếp tục <Check size={18} />
