@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { PGlite } from "@electric-sql/pglite";
 import { book1, lesson1a } from "../src/learning/book1";
+import { book1b, lesson1b } from "../src/learning/book1b";
 import { validateBundle } from "../src/learning/schema";
 import { gameSnapshotSchema, newGame } from "../src/game-state";
 import { initial, canStudy } from "../src/progress";
@@ -15,6 +16,64 @@ import {
   questionKey,
 } from "../src/cloud/operations";
 import { lessons } from "../src/data";
+
+test("1B teaches before six checks, introduces only two words and requires published 1A", () => {
+  assert.equal(book1b.status, "draft");
+  assert.equal(book1b.lessons.length, 1);
+  assert.deepEqual(lesson1b.prerequisites, [lesson1a.id]);
+  assert.deepEqual(book1b.references, [
+    { ...book1.lessons[0], status: "published" },
+  ]);
+  assert.deepEqual(
+    book1b.lessons[0].screens.map((s) => s.kind),
+    [
+      "objective",
+      "pronunciation",
+      "vocabulary",
+      "recall",
+      "notebook",
+      "assessment",
+      "srs",
+    ],
+  );
+  assert.deepEqual(
+    lesson1b.words.map((w) => w.hanzi),
+    ["八", "马"],
+  );
+  assert.equal(lesson1b.questions.length, 6);
+  assert.equal(new Set(lesson1b.questions.map(questionKey)).size, 6);
+  assert.equal(
+    canStudy(initial, lesson1b, [...lessons, lesson1a, lesson1b]),
+    false,
+  );
+  assert.equal(
+    canStudy({ ...initial, completed: [lesson1a.id] }, lesson1b, [
+      lesson1a,
+      lesson1b,
+    ]),
+    true,
+  );
+  const recall = book1b.lessons[0].screens.find((s) => s.kind === "recall")!;
+  assert.equal(recall.cards.length, 6);
+  for (const hanzi of ["八", "马"])
+    assert.deepEqual(
+      recall.cards
+        .filter((c) => c.hanzi === hanzi)
+        .map((c) => c.answerType)
+        .sort(),
+      ["hanzi", "meaning", "pinyin"],
+    );
+  const bad = structuredClone(book1b);
+  bad.lessons[0].screens.find(
+    (s) => s.kind === "assessment",
+  )!.items[0].question.prompt = "十 có nghĩa là gì?";
+  assert.throws(() => validateBundle(bad), /chưa giới thiệu/);
+  const pinyin = structuredClone(book1b);
+  pinyin.lessons[0].screens.find(
+    (s) => s.kind === "vocabulary",
+  )!.words[0].pinyin = "bǎ";
+  assert.throws(() => validateBundle(pinyin));
+});
 
 test("1A has seven stages, three taught words, five independent prompts and stable assessment keys", () => {
   assert.deepEqual(
@@ -235,7 +294,96 @@ test("1A draft and exact promotion preserve ten samples and five users; server g
     assert.ok(reviewed.progress.reviews["你好"].due - Date.now() < 610000);
     await as(ids[1]);
     assert.deepEqual(await snapshot(), before[1]);
+    // Importing 1B must preserve published 1A, samples and all five accounts.
+    const before1b = [];
+    for (const id of ids) {
+      await as(id);
+      before1b.push(await snapshot());
+    }
     await db.exec("reset role;");
+    const oldLessons = (
+      await db.query("select * from public.lessons order by id")
+    ).rows;
+    const oldUnits = (await db.query("select * from public.units order by id"))
+      .rows;
+    await migration("202610130002_book1_lesson1b_draft.sql");
+    assert.deepEqual(
+      (
+        await db.query(
+          "select * from public.lessons where id<>'hanzione-b1-l01b' order by id",
+        )
+      ).rows,
+      oldLessons,
+    );
+    assert.deepEqual(
+      (await db.query("select * from public.units order by id")).rows,
+      oldUnits,
+    );
+    for (const [i, id] of ids.entries()) {
+      await as(id);
+      assert.deepEqual(await snapshot(), before1b[i]);
+    }
+    await assert.rejects(() => apply(finish(lesson1b)), /UNKNOWN_LESSON/);
+    await db.exec("reset role;");
+    const publish1b = readFileSync(
+      "supabase/manual/book1_lesson1b_publish_after_review.sql",
+      "utf8",
+    );
+    const approved1b = structuredClone(book1b);
+    approved1b.status = "published";
+    approved1b.lessons[0].status = "published";
+    writeFileSync(input, JSON.stringify(approved1b));
+    const generated1b = join(dir, "publish1b.sql");
+    execFileSync(process.execPath, [
+      "--import",
+      "tsx",
+      "scripts/import-curriculum.ts",
+      input,
+      "--promote-sql",
+      generated1b,
+    ]);
+    assert.equal(readFileSync(generated1b, "utf8"), publish1b);
+    // Changed draft cannot accidentally be published by an older reviewed SQL file.
+    await db.exec(
+      "update public.lessons set content_json=jsonb_set(content_json,'{minutes}','99') where id='hanzione-b1-l01b';",
+    );
+    await assert.rejects(() => db.exec(publish1b), /DRAFT_CONTENT_MISMATCH/);
+    await db.exec(
+      "rollback;update public.lessons set content_json=jsonb_set(content_json,'{minutes}','15') where id='hanzione-b1-l01b';",
+    );
+    await db.exec(publish1b);
+    await as(ids[1]);
+    await assert.rejects(() => apply(finish(lesson1b)), /LESSON_LOCKED/);
+    await as(ids[0]);
+    const finish1b = finish(lesson1b);
+    await apply(finish1b);
+    await apply(finish1b);
+    const learned1b = await snapshot();
+    assert.equal(learned1b.progress.xp, before1b[0].progress.xp + 40);
+    assert.ok(learned1b.progress.completed.includes(lesson1b.id));
+    for (const hanzi of ["八", "马"]) {
+      assert.equal(learned1b.progress.reviews[hanzi].interval, 1);
+      assert.ok(learned1b.progress.reviews[hanzi].due > Date.now());
+    }
+    for (const [i, id] of ids.entries()) {
+      if (i === 0) continue;
+      await as(id);
+      assert.deepEqual(await snapshot(), before1b[i]);
+    }
+    await db.exec("reset role;");
+    assert.deepEqual(
+      (
+        await db.query(
+          "select * from public.lessons where id<>'hanzione-b1-l01b' order by id",
+        )
+      ).rows,
+      oldLessons,
+    );
+    await assert.rejects(
+      () => migration("202610130002_book1_lesson1b_draft.sql"),
+      /LESSON_ID_EXISTS/,
+    );
+    await db.exec("rollback;");
     await assert.rejects(
       () => migration("202610130001_book1_lesson1a_draft.sql"),
       /LESSON_ID_EXISTS/,

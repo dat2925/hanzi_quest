@@ -5,6 +5,7 @@ import type { Lesson } from "../data";
 import { useEffect, useRef, useState } from "react";
 import { beginner } from "./demo";
 import { book1, lesson1a } from "./book1";
+import { Book1BEntry } from "./Book1BEntry";
 import {
   loadCourseIndex,
   loadChapterIndex,
@@ -183,6 +184,14 @@ export function CourseBrowser({
           </>
         )}
       </section>
+      <Book1BEntry
+        cloud={cloud}
+        onLoaded={onLoaded}
+        onStudy={onStudy}
+        onPreview={setPreview}
+        isUnlocked={isUnlocked}
+        reloadKey={retry}
+      />
       <p>
         Chọn khóa và phiên bản giáo trình. Các chương chưa có bài được để trống
         để chờ nội dung đã duyệt.

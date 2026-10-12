@@ -1,0 +1,684 @@
+{
+  "schemaVersion": 2,
+  "courseId": "hanzione-book1-preview",
+  "title": "HanziOne · Quyển 1",
+  "syllabus": {
+    "family": "foundation",
+    "version": "book1-preview-v1"
+  },
+  "status": "draft",
+  "chapters": [
+    {
+      "id": "hanzione-b1-ch01",
+      "title": "Bài 1 · Chào hỏi và nhập môn Pinyin",
+      "description": "Bài 1A: 你好. Bài 1B: b, p, m, f, a, o, 八, 马. Các bài còn lại sẽ biên soạn và duyệt sau."
+    }
+  ],
+  "lessons": [
+    {
+      "schemaVersion": 2,
+      "id": "hanzione-b1-l01b",
+      "chapterId": "hanzione-b1-ch01",
+      "title": "Quyển 1 · Bài 1B: Thanh mẫu b, p, m, f và vận mẫu a, o",
+      "description": "Làm quen cách ghép Pinyin qua hai từ 八 (bā) và 马 (mǎ); luyện nghe, tự nhớ và viết.",
+      "minutes": 15,
+      "difficulty": 1,
+      "status": "draft",
+      "prerequisites": [
+        "hanzione-b1-l01a"
+      ],
+      "screens": [
+        {
+          "id": "welcome",
+          "kind": "objective",
+          "title": "1/7 · Pinyin được ghép như thế nào?",
+          "body": "Hôm nay bạn không phải học thuộc cả bảng Pinyin. Chỉ tập trung vào b, p, m, f, hai vận mẫu a, o và hai chữ 八, 马. Chuẩn bị giấy bút; bạn sẽ luyện phát âm trước khi làm bài.",
+          "theory": "Pinyin ghi cách đọc tiếng Quan thoại bằng chữ Latin. Nhiều âm tiết có thanh mẫu (phần đứng đầu), vận mẫu (phần phía sau) và thanh điệu. Ví dụ: bā gồm b + a + thanh 1; mǎ gồm m + a + thanh 3. Không phải mọi âm tiết đều bắt buộc có thanh mẫu. Thanh mẫu b trong Pinyin không đọc hoàn toàn giống chữ b tiếng Việt.",
+          "steps": [
+            "Hiểu cách ghép âm và vị trí môi.",
+            "Học 2 từ mới và nghe phát âm.",
+            "Tự che đáp án, luyện viết, làm bài kiểm tra rồi hẹn ôn lại."
+          ],
+          "introduces": [
+            "pinyin-components",
+            "initial-and-final"
+          ]
+        },
+        {
+          "id": "sound-basics",
+          "kind": "pronunciation",
+          "title": "2/7 · Bốn thanh mẫu, hai vận mẫu",
+          "body": "b: khép hai môi rồi mở, ít bật hơi. p: khép môi rồi mở với luồng hơi rõ; đặt tờ giấy mỏng trước miệng để tự kiểm tra. m: khép môi và ngân âm qua mũi. f: răng trên chạm nhẹ môi dưới và thổi hơi. a: mở miệng rộng. o: môi tròn, cách phát âm còn phụ thuộc âm tiết; đừng ép nó giống hệt một nguyên âm tiếng Việt. Ghép thử ba, pa, ma, fa và bo, po, mo, fo (đây là ví dụ phiên âm, chưa phải danh sách từ mới).",
+          "theory": "Trong Pinyin, b và p đều là âm tắc hai môi: b ít bật hơi, p bật hơi mạnh; đây không phải cặp phân biệt hữu thanh/vô thanh theo cách đọc chữ b/p trong tiếng Việt. Người mới nên luyện khẩu hình và so sánh hơi thoát ra trước, rồi mới tự đánh giá bằng tai. Phần nghe chuẩn b/p/m/f riêng cần dữ liệu audio Mandarin đã kiểm chứng; không dùng giọng tiếng Anh đọc từng chữ Latin để thay thế.",
+          "speech": "八",
+          "examples": [
+            {
+              "hanzi": "八",
+              "pinyin": "bā",
+              "meaning": "Ví dụ ghép b + a, từ sẽ học ở màn tiếp theo."
+            },
+            {
+              "hanzi": "马",
+              "pinyin": "mǎ",
+              "meaning": "Ví dụ ghép m + a, từ sẽ học ở màn tiếp theo."
+            }
+          ],
+          "steps": [
+            "Đọc b / p và thử tờ giấy trước miệng để phân biệt bật hơi.",
+            "Đọc m và f, kiểm tra môi và răng theo mô tả.",
+            "Đọc a và o, rồi ghép thử ba / pa / ma / fa.",
+            "Nghe 八 từ giọng Mandarin nếu thiết bị hỗ trợ; đây chưa phải bản thu âm kiểm chứng toàn bộ các âm."
+          ],
+          "introduces": [
+            "initial-b",
+            "initial-p",
+            "initial-m",
+            "initial-f",
+            "final-a",
+            "final-o",
+            "aspiration-bp",
+            "pinyin-syllable-composition"
+          ]
+        },
+        {
+          "id": "words",
+          "kind": "vocabulary",
+          "title": "3/7 · Hai chữ đầu tiên để ghép âm",
+          "body": "Chỉ học hai từ mới: Tám và Ngựa. Xem chữ Hán, nghe rồi đọc theo mẫu bên dưới. Dấu ngang là thanh 1: đọc cao, đều. Dấu hình chữ v là thanh 3: khi đọc riêng, hạ giọng rồi nâng lên. Chưa cần đọc hoàn hảo; hãy tập nhận ra hai từ. Bấm Ẩn Pinyin để tự đọc lại mà không nhìn phiên âm.",
+          "words": [
+            {
+              "hanzi": "八",
+              "pinyin": "bā",
+              "meaning": "Tám",
+              "tones": [
+                1
+              ],
+              "example": {
+                "hanzi": "八",
+                "pinyin": "bā",
+                "meaning": "Số tám; luyện ghép thanh mẫu b với vận mẫu a."
+              }
+            },
+            {
+              "hanzi": "马",
+              "pinyin": "mǎ",
+              "meaning": "Ngựa",
+              "tones": [
+                3
+              ],
+              "example": {
+                "hanzi": "马",
+                "pinyin": "mǎ",
+                "meaning": "Con ngựa; luyện ghép thanh mẫu m với vận mẫu a."
+              }
+            }
+          ],
+          "steps": [
+            "Chạm nghe 八, lặp lại 2–3 lần.",
+            "Chạm nghe 马, lặp lại 2–3 lần.",
+            "Che Pinyin và thử đọc từ trí nhớ."
+          ],
+          "introduces": [
+            "word-ba",
+            "word-ma",
+            "tone-one",
+            "tone-three"
+          ]
+        },
+        {
+          "id": "remember",
+          "kind": "recall",
+          "title": "4/7 · Che đáp án để tự nhớ",
+          "body": "Tự trả lời thành tiếng hoặc viết vào vở trước khi lật thẻ. Hãy đánh giá đúng mức bạn nhớ được. Nếu quên, ứng dụng sẽ lên lịch ôn sớm hơn, không trừ điểm bài học.",
+          "cards": [
+            {
+              "id": "ba-meaning",
+              "prompt": "八 có nghĩa là gì?",
+              "answer": "Tám",
+              "answerType": "meaning",
+              "hint": "Một con số.",
+              "hanzi": "八",
+              "knowledge": [
+                "word-ba"
+              ]
+            },
+            {
+              "id": "ma-meaning",
+              "prompt": "马 có nghĩa là gì?",
+              "answer": "Ngựa",
+              "answerType": "meaning",
+              "hint": "Một con vật.",
+              "hanzi": "马",
+              "knowledge": [
+                "word-ma"
+              ]
+            },
+            {
+              "id": "ba-write",
+              "prompt": "Tám — hãy tự viết chữ Hán mà không nhìn mẫu.",
+              "answer": "八",
+              "answerType": "hanzi",
+              "hint": "Chữ gồm hai nét chính.",
+              "hanzi": "八",
+              "knowledge": [
+                "word-ba"
+              ]
+            },
+            {
+              "id": "ma-write",
+              "prompt": "Ngựa — hãy tự viết chữ Hán mà không nhìn mẫu.",
+              "answer": "马",
+              "answerType": "hanzi",
+              "hint": "Chữ có ba nét trong dạng giản thể.",
+              "hanzi": "马",
+              "knowledge": [
+                "word-ma"
+              ]
+            },
+            {
+              "id": "ba-pinyin",
+              "prompt": "八 — đọc Pinyin kèm dấu thanh.",
+              "answer": "bā",
+              "answerType": "pinyin",
+              "hint": "b + a + thanh 1.",
+              "hanzi": "八",
+              "knowledge": [
+                "word-ba",
+                "tone-one"
+              ]
+            },
+            {
+              "id": "ma-pinyin",
+              "prompt": "马 — đọc Pinyin kèm dấu thanh.",
+              "answer": "mǎ",
+              "answerType": "pinyin",
+              "hint": "m + a + thanh 3.",
+              "hanzi": "马",
+              "knowledge": [
+                "word-ma",
+                "tone-three"
+              ]
+            }
+          ],
+          "introduces": []
+        },
+        {
+          "id": "notebook",
+          "kind": "notebook",
+          "title": "5/7 · Viết vào vở để nhớ mặt chữ",
+          "body": "Viết mỗi chữ theo mẫu 2–3 lần vào vở. Sau đó bấm Che mẫu để tự viết hai từ “Tám” và “Ngựa” từ trí nhớ. Cuối cùng hiện mẫu và so sánh. Đây là tự kiểm tra; ứng dụng chưa chấm nét viết hoặc thứ tự nét.",
+          "checklist": [
+            "Đọc nghĩa và Pinyin trước khi viết.",
+            "Nhìn mẫu rồi viết chậm 2–3 lần từng chữ.",
+            "Che mẫu, tự viết lại theo nghĩa Tám / Ngựa.",
+            "Mở mẫu để so sánh; khoanh chữ cần ôn nếu còn quên."
+          ],
+          "introduces": [],
+          "examples": [
+            {
+              "hanzi": "八",
+              "pinyin": "bā",
+              "meaning": "Tám · Hai nét chính: phẩy sang trái rồi mác sang phải."
+            },
+            {
+              "hanzi": "马",
+              "pinyin": "mǎ",
+              "meaning": "Ngựa · Dạng giản thể có ba nét chính. Quan sát hình mẫu, giữ chữ gọn trong một ô vuông."
+            }
+          ]
+        },
+        {
+          "id": "check",
+          "kind": "assessment",
+          "title": "6/7 · Kiểm tra sau khi đã học",
+          "body": "Chỉ hỏi những kiến thức vừa được hướng dẫn. Mỗi câu sai phải có giải thích ngắn, không hỏi những âm/từ mới ngoài bài.",
+          "items": [
+            {
+              "id": "meaning-ba",
+              "phase": "practice",
+              "question": {
+                "type": "quiz",
+                "prompt": "八 có nghĩa là gì?",
+                "options": [
+                  "Tám",
+                  "Ngựa"
+                ],
+                "answer": "Tám",
+                "explanation": "八 (bā) nghĩa là tám.",
+                "hint": "Từ có thanh mẫu b.",
+                "knowledge": [
+                  "word-ba"
+                ]
+              }
+            },
+            {
+              "id": "meaning-ma",
+              "phase": "practice",
+              "question": {
+                "type": "quiz",
+                "prompt": "马 có nghĩa là gì?",
+                "options": [
+                  "Ngựa",
+                  "Tám"
+                ],
+                "answer": "Ngựa",
+                "explanation": "马 (mǎ) nghĩa là ngựa.",
+                "hint": "Từ có thanh mẫu m.",
+                "knowledge": [
+                  "word-ma"
+                ]
+              }
+            },
+            {
+              "id": "aspiration",
+              "phase": "application",
+              "question": {
+                "type": "quiz",
+                "prompt": "Trong Pinyin, thanh mẫu nào bật hơi mạnh hơn?",
+                "options": [
+                  "p",
+                  "b"
+                ],
+                "answer": "p",
+                "explanation": "p bật hơi rõ, b bật hơi ít. Hãy thử dùng tờ giấy.",
+                "hint": "So sánh b và p khi môi mở.",
+                "knowledge": [
+                  "initial-b",
+                  "initial-p",
+                  "aspiration-bp"
+                ]
+              }
+            },
+            {
+              "id": "initial-final",
+              "phase": "application",
+              "question": {
+                "type": "quiz",
+                "prompt": "Trong âm tiết bā, chữ a là phần nào?",
+                "options": [
+                  "Vận mẫu",
+                  "Thanh mẫu"
+                ],
+                "answer": "Vận mẫu",
+                "explanation": "b là thanh mẫu; a là vận mẫu.",
+                "hint": "Thanh mẫu đứng đầu; vận mẫu đứng sau.",
+                "knowledge": [
+                  "initial-and-final",
+                  "initial-b",
+                  "final-a"
+                ]
+              }
+            },
+            {
+              "id": "pinyin-ma",
+              "phase": "final",
+              "question": {
+                "type": "quiz",
+                "prompt": "Pinyin của 马 là gì?",
+                "options": [
+                  "mǎ",
+                  "bā"
+                ],
+                "answer": "mǎ",
+                "explanation": "马 đọc mǎ, thanh 3; 八 đọc bā, thanh 1.",
+                "hint": "Nhớ thanh mẫu m của 马.",
+                "knowledge": [
+                  "word-ma",
+                  "word-ba",
+                  "tone-three",
+                  "tone-one"
+                ]
+              }
+            },
+            {
+              "id": "match-words",
+              "phase": "final",
+              "question": {
+                "type": "match",
+                "prompt": "Ghép hai chữ Hán với nghĩa đã học.",
+                "options": [
+                  "八|Tám",
+                  "马|Ngựa"
+                ],
+                "answer": "matched",
+                "explanation": "八 là tám; 马 là ngựa.",
+                "hint": "Chỉ có hai chữ đã học trong bài.",
+                "knowledge": [
+                  "word-ba",
+                  "word-ma"
+                ]
+              }
+            }
+          ],
+          "introduces": []
+        },
+        {
+          "id": "srs",
+          "kind": "srs",
+          "title": "7/7 · Hẹn lần gặp lại",
+          "body": "Bạn mới cần nhớ thật chắc hai từ 八 và 马. Đừng ôn bằng cách nhìn đáp án trước. Lần sau hãy thử: chữ → nghĩa; nghĩa → chữ; chữ → Pinyin. Với b/p/m/f và a/o, hãy tự phát âm và so sánh khẩu hình; chưa tự động chấm phát âm. Nếu chưa nhớ, ôn sớm hơn; lịch ôn thực tế dùng cơ chế SRS hiện có của HanziOne.",
+          "steps": [
+            "Sau khi học thật: tải lại trang để kiểm tra XP/tiến độ.",
+            "Ngày mai che mẫu thử viết 八 và 马.",
+            "Vào mục Luyện tập để tìm các từ đến hạn.",
+            "Bản xem thử không ghi tiến độ hoặc XP."
+          ],
+          "introduces": []
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "schemaVersion": 2,
+      "id": "hanzione-b1-l01a",
+      "chapterId": "hanzione-b1-ch01",
+      "title": "Quyển 1 · Bài 1A: 你好 – Xin chào",
+      "description": "Lời chào đầu tiên: nghe, hiểu, tự nhớ và tự viết. Không cần biết tiếng Trung trước.",
+      "minutes": 15,
+      "difficulty": 1,
+      "status": "published",
+      "prerequisites": [],
+      "screens": [
+        {
+          "id": "welcome",
+          "kind": "objective",
+          "title": "1/7 · Lời chào đầu tiên",
+          "body": "Bạn gặp một người bạn mới. Hôm nay, bạn sẽ học cách nói Xin chào, nhận ra hai chữ trong lời chào và thử viết chúng vào vở. Chỉ ba mục từ mới, học từng chút một.",
+          "theory": "Tiếng Trung dùng chữ Hán để viết. Pinyin là cách ghi âm bằng chữ Latin giúp bạn đọc chữ Hán; dấu trên nguyên âm cho biết thanh điệu. Bạn chưa cần thuộc toàn bộ Pinyin hay thanh điệu. Hãy bắt đầu bằng một lời chào và nghe trước khi tự nói.",
+          "steps": [
+            "Học ba mục từ, nghe và đọc theo.",
+            "Che đáp án để tự nhớ, rồi viết vào vở.",
+            "Làm năm hoạt động kiểm tra, xem lại lỗi và chuẩn bị lịch ôn."
+          ],
+          "introduces": [
+            "pinyin-purpose"
+          ]
+        },
+        {
+          "id": "words",
+          "kind": "vocabulary",
+          "title": "2/7 · Ba mục từ của hôm nay",
+          "body": "Chạm vào từng từ để nghe. 你 chỉ người đang nói chuyện với bạn. 好 nghĩa là tốt; ghép 你 rồi 好 thành lời chào 你好. Trong lời chào, hãy nhớ nghĩa cả cụm là Xin chào, không dịch từng chữ thành Bạn tốt.",
+          "introduces": [
+            "word-ni",
+            "word-hao",
+            "greeting-nihao"
+          ],
+          "words": [
+            {
+              "hanzi": "你",
+              "pinyin": "nǐ",
+              "meaning": "Bạn",
+              "tones": [
+                3
+              ],
+              "example": {
+                "hanzi": "你好",
+                "pinyin": "nǐ hǎo",
+                "meaning": "Xin chào — 你 chỉ người bạn đang chào."
+              }
+            },
+            {
+              "hanzi": "好",
+              "pinyin": "hǎo",
+              "meaning": "Tốt",
+              "tones": [
+                3
+              ],
+              "example": {
+                "hanzi": "你好",
+                "pinyin": "nǐ hǎo",
+                "meaning": "Xin chào — 好 đứng sau 你 trong lời chào."
+              }
+            },
+            {
+              "hanzi": "你好",
+              "pinyin": "nǐ hǎo",
+              "meaning": "Xin chào",
+              "tones": [
+                3,
+                3
+              ],
+              "example": {
+                "hanzi": "你好",
+                "pinyin": "nǐ hǎo",
+                "meaning": "Bạn gặp một người bạn mới và chào: Xin chào!"
+              }
+            }
+          ]
+        },
+        {
+          "id": "listen-speak",
+          "kind": "pronunciation",
+          "title": "3/7 · Nghe rồi nói theo",
+          "body": "Hai âm trong lời chào đều viết dấu ˇ (thanh 3). Khi đứng một mình, thanh 3 có thể hạ xuống rồi nhấc lên; trong lời nói liền, không cần cố kéo dài. Khi hai thanh 3 đi liền nhau, thanh đầu thường đọc gần thanh 2 (giọng đi lên). Cách viết Pinyin của lời chào vẫn giữ hai dấu thanh 3. Hãy nghe cả cụm và bắt chước nhịp nói.",
+          "speech": "你好",
+          "introduces": [
+            "tone-three-pair"
+          ],
+          "examples": [
+            {
+              "hanzi": "你好",
+              "pinyin": "nǐ hǎo",
+              "meaning": "Xin chào · Pinyin chuẩn để ghi nhớ"
+            }
+          ],
+          "steps": [
+            "Nghe lời chào hai lần; dùng Nghe chậm nếu cần.",
+            "Đọc theo ba lần, nghỉ một nhịp giữa mỗi lần.",
+            "Ẩn Pinyin và thử đọc lại chữ Hán. Chưa chắc thì nghe lại; chưa cần nói hoàn hảo."
+          ]
+        },
+        {
+          "id": "remember",
+          "kind": "recall",
+          "title": "4/7 · Tự nhớ trước khi xem",
+          "body": "Đừng đoán bằng cách nhìn lựa chọn. Hãy tự nói hoặc viết đáp án, rồi lật thẻ để đối chiếu. Chưa nhớ là tín hiệu để ôn sớm; tự đánh giá không cộng điểm hay XP.",
+          "cards": [
+            {
+              "id": "greeting-meaning",
+              "prompt": "你好 có nghĩa là gì?",
+              "answer": "Xin chào",
+              "hint": "Bạn dùng cụm này khi gặp người bạn mới.",
+              "hanzi": "你好",
+              "knowledge": [
+                "greeting-nihao"
+              ]
+            },
+            {
+              "id": "greeting-write",
+              "prompt": "Xin chào — nói hoặc viết bằng tiếng Trung, không nhìn mẫu.",
+              "answer": "你好",
+              "answerType": "hanzi",
+              "hint": "Chữ chỉ Bạn đứng trước, chữ nghĩa Tốt đứng sau.",
+              "hanzi": "你好",
+              "knowledge": [
+                "greeting-nihao"
+              ]
+            },
+            {
+              "id": "ni-meaning",
+              "prompt": "你 có nghĩa là gì?",
+              "answer": "Bạn",
+              "hint": "Chỉ người đang nói chuyện với mình.",
+              "hanzi": "你",
+              "knowledge": [
+                "word-ni"
+              ]
+            },
+            {
+              "id": "hao-meaning",
+              "prompt": "好 có nghĩa là gì?",
+              "answer": "Tốt",
+              "hint": "Một từ mang nghĩa tích cực, cũng nằm ở cuối lời chào.",
+              "hanzi": "好",
+              "knowledge": [
+                "word-hao"
+              ]
+            },
+            {
+              "id": "greeting-pinyin",
+              "prompt": "你好 — hãy nói Pinyin, nhớ cả dấu thanh.",
+              "answer": "nǐ hǎo",
+              "answerType": "pinyin",
+              "hint": "Cả hai âm đều viết thanh 3, dấu ˇ.",
+              "hanzi": "你好",
+              "knowledge": [
+                "greeting-nihao",
+                "tone-three-pair"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "notebook",
+          "kind": "notebook",
+          "title": "5/7 · Lấy vở ra nào",
+          "body": "Quan sát hai chữ trong mẫu bên dưới, rồi chép chậm. Chữ chỉ Bạn có phần chỉ người bên trái; chữ nghĩa Tốt gồm phần nữ bên trái và phần con bên phải. Đây là gợi ý nhận hình, chưa phải bài dạy đầy đủ thứ tự nét. Ô viết trên màn hình chỉ để thử; ứng dụng chưa chấm chữ hay nét viết.",
+          "examples": [
+            {
+              "hanzi": "你",
+              "pinyin": "nǐ",
+              "meaning": "Bạn · cấu tạo nhìn hình: 亻 + 尔"
+            },
+            {
+              "hanzi": "好",
+              "pinyin": "hǎo",
+              "meaning": "Tốt · cấu tạo nhìn hình: 女 + 子"
+            },
+            {
+              "hanzi": "你好",
+              "pinyin": "nǐ hǎo",
+              "meaning": "Xin chào"
+            }
+          ],
+          "checklist": [
+            "Đã viết mỗi chữ đơn ba lần và cả lời chào hai lần vào vở.",
+            "Đã che mẫu, nhìn nghĩa Xin chào và tự viết lại một lần.",
+            "Đã hiện mẫu để đối chiếu vị trí các phần, Pinyin và nghĩa; sửa chỗ mình chưa nhớ."
+          ]
+        },
+        {
+          "id": "check",
+          "kind": "assessment",
+          "title": "6/7 · Thử dùng điều vừa học",
+          "body": "Năm hoạt động chỉ dùng ba mục từ vừa học. Mỗi lỗi đều có giải thích. Nếu chưa đạt 70%, hãy tự nhớ lại trước khi kết thúc.",
+          "items": [
+            {
+              "id": "meaning",
+              "phase": "final",
+              "question": {
+                "type": "quiz",
+                "prompt": "你好 có nghĩa là gì?",
+                "options": [
+                  "Xin chào",
+                  "Bạn",
+                  "Tốt"
+                ],
+                "answer": "Xin chào",
+                "explanation": "你好 là lời chào: Xin chào. Hãy nhớ nghĩa của cả cụm.",
+                "hint": "Bạn dùng cả cụm khi gặp một người bạn mới.",
+                "knowledge": [
+                  "greeting-nihao"
+                ]
+              }
+            },
+            {
+              "id": "ni",
+              "phase": "final",
+              "question": {
+                "type": "quiz",
+                "prompt": "你 có nghĩa là gì?",
+                "options": [
+                  "Bạn",
+                  "Tốt",
+                  "Xin chào"
+                ],
+                "answer": "Bạn",
+                "explanation": "你 nghĩa là Bạn, chỉ người đang nói chuyện với mình.",
+                "hint": "Đây là chữ đầu tiên trong lời chào.",
+                "knowledge": [
+                  "word-ni"
+                ]
+              }
+            },
+            {
+              "id": "pinyin",
+              "phase": "final",
+              "question": {
+                "type": "quiz",
+                "prompt": "Pinyin của cả lời chào 你好 là gì?",
+                "options": [
+                  "nǐ hǎo",
+                  "nǐ",
+                  "hǎo"
+                ],
+                "answer": "nǐ hǎo",
+                "explanation": "Hai chữ 你好 có hai âm nǐ hǎo; cả hai đều viết dấu thanh 3. Khi nói liền, âm đầu thường nghe gần thanh 2.",
+                "hint": "Cần đủ hai âm, theo thứ tự chữ trong lời chào.",
+                "knowledge": [
+                  "greeting-nihao",
+                  "tone-three-pair"
+                ]
+              }
+            },
+            {
+              "id": "order",
+              "phase": "application",
+              "question": {
+                "type": "sentence",
+                "prompt": "Bạn gặp một người bạn mới. Ghép lời chào Xin chào.",
+                "options": [
+                  "好",
+                  "你"
+                ],
+                "answer": "你好",
+                "explanation": "Lời chào là 你好: chữ 你 đứng trước chữ 好.",
+                "hint": "Bạn đứng trước Tốt trong cụm đã học.",
+                "knowledge": [
+                  "greeting-nihao",
+                  "word-ni",
+                  "word-hao"
+                ]
+              }
+            },
+            {
+              "id": "match",
+              "phase": "final",
+              "question": {
+                "type": "match",
+                "prompt": "Ghép ba mục từ với nghĩa đã học.",
+                "options": [
+                  "你|Bạn",
+                  "好|Tốt",
+                  "你好|Xin chào"
+                ],
+                "answer": "matched",
+                "explanation": "你 là Bạn, 好 là Tốt, còn cả cụm 你好 là Xin chào.",
+                "hint": "Phân biệt nghĩa từng chữ và nghĩa của cả lời chào.",
+                "knowledge": [
+                  "word-ni",
+                  "word-hao",
+                  "greeting-nihao"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "review-plan",
+          "kind": "srs",
+          "title": "7/7 · Nhớ lâu bằng những lần ôn ngắn",
+          "body": "Bạn vừa học lời chào đầu tiên. Năm hướng tự nhớ sẽ tiếp tục được luyện: chữ → nghĩa, nghĩa Xin chào → chữ, từng chữ → nghĩa và lời chào → Pinyin. Các hướng của cùng một từ dùng chung lịch ôn; nếu một hướng chưa nhớ, cả từ được ôn sớm. Bản xem trước chỉ cho xem kế hoạch, không lưu lịch hay XP.",
+          "steps": [
+            "Khi bài đã xuất bản và bạn lưu kết quả: từ sai hoặc tự đánh giá Chưa nhớ được hẹn lại sau 10 phút.",
+            "Từ nhớ được hẹn sau 1 ngày; các lần đúng tiếp theo tăng khoảng cách, tối đa 30 ngày. Lịch thích ứng theo lần ôn thực tế.",
+            "Vào Luyện tập để lật thẻ, luyện nghe, nghĩa hoặc Pinyin; vào Viết để nhìn nghĩa và tự viết lại vào vở.",
+            "Tự đánh giá không cộng XP. Điểm kiểm tra là phần riêng; đạt từ 70% để hoàn thành bài."
+          ]
+        }
+      ]
+    }
+  ]
+}

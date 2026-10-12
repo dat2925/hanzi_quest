@@ -1,10 +1,13 @@
 import { test, expect, type Page } from "@playwright/test";
 import { book1, lesson1a } from "../src/learning/book1";
+import { lesson1b } from "../src/learning/book1b";
 import { initial } from "../src/progress";
 
 async function setup(
   page: Page,
   mode: "published" | "draft" | "error" | "loading",
+  include1b = false,
+  completed1a = false,
 ) {
   const id = "40000000-0000-4000-8000-000000000001";
   const user = {
@@ -52,7 +55,11 @@ async function setup(
     let body: unknown = user;
     if (url.pathname.endsWith("learning_snapshot"))
       body = {
-        progress: { ...initial, onboarded: true },
+        progress: {
+          ...initial,
+          onboarded: true,
+          completed: completed1a ? [lesson1a.id] : [],
+        },
         stages: [],
         legacyPending: false,
       };
@@ -93,6 +100,19 @@ async function setup(
                   units: { sort_order: 0, courses: { sort_order: 1 } },
                 },
               ];
+        if (include1b && mode !== "draft")
+          (body as any[]).push({
+            id: lesson1b.id,
+            content_json: {
+              ...lesson1b,
+              learning: { ...lesson1b.learning!, status: "published" },
+            },
+            sort_order: 1,
+            units: { sort_order: 0, courses: { sort_order: 1 } },
+          });
+        const idFilter = url.searchParams.get("id");
+        if (idFilter)
+          body = (body as any[]).filter((row) => "eq." + row.id === idFilter);
       }
     }
     await route.fulfill({ status: 200, json: body });
@@ -105,6 +125,87 @@ async function setup(
     .click();
   return { operations, release };
 }
+
+for (const completed1a of [false, true])
+  test(`published 1B prerequisite and course/chapter navigation, completed1a=${completed1a}`, async ({
+    page,
+  }) => {
+    const { operations } = await setup(page, "published", true, completed1a);
+    const card = page.getByRole("region", { name: "Bài 1B", exact: true });
+    await expect(card).toContainText("Đã xuất bản");
+    await expect(card.getByRole("button", { name: /Xem thử/ })).toHaveCount(0);
+    if (!completed1a) {
+      await expect(card).toContainText("Hoàn thành Bài 1A");
+      await expect(
+        card.getByRole("button", { name: "Học ngay" }),
+      ).toBeDisabled();
+    } else {
+      await card.getByRole("button", { name: "Học ngay" }).click();
+      await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
+      await expect
+        .poll(() =>
+          operations.some(
+            (op) => op.kind === "stage" && op.payload.lesson.id === lesson1b.id,
+          ),
+        )
+        .toBe(true);
+      await page.getByRole("button", { name: "Đóng bài học" }).click();
+    }
+    await page.getByRole("combobox").selectOption(book1.courseId);
+    await page.getByRole("button", { name: /^Bài 1 · Chào hỏi/ }).click();
+    const article = page
+      .getByRole("region", { name: "Danh sách bài trong chương" })
+      .getByRole("article")
+      .filter({ hasText: lesson1b.title });
+    await expect(article).toBeVisible();
+    await expect(article.getByRole("button")).toHaveText(
+      completed1a ? "Học ngay" : "Xem điều kiện mở khóa",
+    );
+    if (completed1a) {
+      await article.getByRole("button").click();
+      await expect(page.getByRole("dialog")).toContainText(
+        "1/7 · Pinyin được ghép như thế nào?",
+      );
+      await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
+    }
+  });
+
+test("draft 1B previews without synchronized operations", async ({ page }) => {
+  const { operations } = await setup(page, "published"); // 1A published, 1B hidden by RLS
+  const card = page.getByRole("region", { name: "Bài 1B", exact: true });
+  await expect(card).toContainText("Chưa có bản xuất bản Bài 1B");
+  await card.getByRole("button", { name: /Xem thử/ }).click();
+  await expect(page.getByRole("dialog")).toContainText("XEM TRƯỚC");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Tiếp tục", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Đóng bài học" }).click();
+  expect(
+    operations.filter((op) => ["stage", "finish", "review"].includes(op.kind)),
+  ).toEqual([]);
+});
+
+test("1B query errors and pending requests never masquerade as draft", async ({
+  page,
+}) => {
+  const { release } = await setup(page, "loading", true);
+  const card = page.getByRole("region", { name: "Bài 1B", exact: true });
+  await expect(card).toContainText("Đang kiểm tra");
+  await expect(card.getByRole("button")).toHaveCount(0);
+  release();
+  await expect(card).toContainText("Đã xuất bản");
+  await page.route("https://hanzi-qa.supabase.co/rest/v1/lessons?**", (route) =>
+    route.fulfill({ status: 500, json: { message: "QA error" } }),
+  );
+  await page
+    .getByRole("button", { name: "Tải lại trạng thái giáo trình" })
+    .click();
+  await expect(card).toContainText("Chưa xác định được");
+  await expect(
+    card.getByRole("button", { name: /Xem thử|Học ngay/ }),
+  ).toHaveCount(0);
+});
 
 test("published 1A opens the real lesson directly from the featured card and chapter list", async ({
   page,

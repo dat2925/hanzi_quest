@@ -38,6 +38,8 @@ Chế độ phát triển có hot reload: `npm run dev`, mở http://127.0.0.1:5
 
 Giáo trình tương tác: xem [CURRICULUM.md](CURRICULUM.md) để biên soạn JSON, validate Zod, xem trước và xuất SQL draft/published. Production cần chạy migrations mới 004 rồi 005 theo [SETUP_SUPABASE.md](SETUP_SUPABASE.md). Chưa tự sinh giáo trình HSK đầy đủ.
 
+Bài 1B có bản xem thử 7 màn trong Hành trình, chỉ thêm hai từ 八 và 马. Xem [BOOK1B_REVIEW.md](BOOK1B_REVIEW.md) để duyệt nội dung, kiểm thử và chạy riêng SQL draft/publish sau khi đồng ý xuất bản.
+
 | File              | Trách nhiệm                                              |
 | ----------------- | -------------------------------------------------------- |
 | `src/App.tsx`     | Các trang, điều hướng, thiết lập, quản lý trạng thái     |
