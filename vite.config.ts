@@ -41,6 +41,9 @@ export default defineConfig(({ mode }) => {
     ],
     server: { port: 5173, strictPort: true },
     build: {
+      // Single-file HTML has no external chunks to preload. Avoid unresolved
+      // preload placeholders when scripts are inlined by generateBundle.
+      modulePreload: false,
       target: "es2022",
       rollupOptions: { output: { codeSplitting: false } },
     },

@@ -16,6 +16,12 @@ import type { Progress } from "../progress";
 import { loadCurriculum } from "./curriculum";
 import { installCurriculum } from "../data";
 import { gameSnapshotSchema } from "../game-state";
+import { openStandalone } from "../bridge";
+import {
+  CurriculumError,
+  safeErrorMessage,
+  logCurriculumError,
+} from "./curriculum-data";
 type Account = {
   manager: SyncManager | null;
   email: string;
@@ -76,7 +82,9 @@ function AuthForm({
           <button
             className="primary"
             onClick={() =>
-              void import("../bridge").then((m) => m.openStandalone(appUrl))
+              void openStandalone(appUrl).catch((error) =>
+                logCurriculumError(error, "open-standalone"),
+              )
             }
           >
             Mở website để đăng nhập
@@ -389,8 +397,8 @@ function SignedAccount({
   useEffect(() => {
     let active = true;
     void loadCurriculum()
-      .then(async () => {
-        const { lessons } = await import("../data");
+      .then((lessons) => {
+        if (!active) return;
         try {
           localStorage.setItem("hanzi-curriculum-v1", JSON.stringify(lessons));
         } catch {
@@ -398,19 +406,28 @@ function SignedAccount({
         }
         if (active) setCurriculumReady(true);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!active) return;
+        logCurriculumError(error);
         try {
           const cached = JSON.parse(
             localStorage.getItem("hanzi-curriculum-v1") || "null",
           );
-          installCurriculum(
-            gameSnapshotSchema.shape.lesson.array().min(1).parse(cached),
-          );
+          const parsed = gameSnapshotSchema.shape.lesson
+            .array()
+            .min(1)
+            .safeParse(cached);
+          if (!parsed.success)
+            throw new CurriculumError(
+              "cache",
+              `Cache không hợp lệ: ${parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
+            );
+          installCurriculum(parsed.data);
           setCurriculumReady(true);
-        } catch {
+        } catch (cacheError) {
+          logCurriculumError(cacheError, "cache");
           setCurriculumError(
-            "Không tải được giáo trình và chưa có cache. Chạy migrations, kiểm tra mạng rồi tải lại.",
+            `Không tải được giáo trình: ${safeErrorMessage(error)} Cache không dùng được: ${safeErrorMessage(cacheError)}`,
           );
         }
       });
