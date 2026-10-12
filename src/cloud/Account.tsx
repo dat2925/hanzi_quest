@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Panda } from "../Art";
+import { ProductCredit } from "../ProductCredit";
 import { load, initial, progressSchema, STORAGE_KEY } from "../progress";
 import { supabase, cloudConfigured, embedded, appUrl } from "./client";
 import { SyncManager } from "./sync";
@@ -92,6 +93,7 @@ function AuthForm({
           <button className="secondary" onClick={onGuest}>
             Học local trong khung này
           </button>
+          <ProductCredit />
         </section>
       </div>
     );
@@ -252,6 +254,7 @@ function AuthForm({
             </button>
           </div>
         )}
+        <ProductCredit />
       </section>
     </div>
   );

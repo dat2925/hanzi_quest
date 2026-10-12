@@ -2,6 +2,8 @@
 
 Ứng dụng React + TypeScript dành cho người Việt, với giao diện xanh lá/kem, linh vật Bao được vẽ riêng bằng SVG và trải nghiệm standalone hoặc MCP Apps.
 
+Một sản phẩm của **SoloTech**.
+
 ## Tài khoản Supabase
 
 Xem [SETUP_SUPABASE.md](SETUP_SUPABASE.md) để chạy migrations, cấu hình email/password, redirect, biến môi trường và triển khai Render. Không có credentials trong repository. Khi chưa cấu hình, app giữ chế độ local; khi cấu hình sẽ có Auth, cache/queue theo tài khoản và RPC đồng bộ. Chưa xác nhận hoạt động với project Supabase/SMTP hoặc ChatGPT thật.

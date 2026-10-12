@@ -46,6 +46,7 @@ import {
   type Progress,
 } from "./progress";
 import Game, { speak, WritingPad } from "./Game";
+import { ProductCredit } from "./ProductCredit";
 import { Panda, Landscape } from "./Art";
 import { connectHost } from "./bridge";
 import { useAccount, AccountSettings, SyncBanner } from "./cloud/Account";
@@ -447,7 +448,7 @@ export default function App() {
           <Settings size={20} /> Cài đặt
         </button>
         <div className="sidebar-footer">
-          Được tạo cho hành trình của bạn <span>✦</span>
+          <ProductCredit />
         </div>
       </aside>
       <div className="main-shell">
@@ -1528,6 +1529,9 @@ export default function App() {
             </>
           )}
         </main>
+        <footer className="mobile-product-footer">
+          <ProductCredit />
+        </footer>
       </div>
       <nav className="bottom-nav" aria-label="Điều hướng di động">
         {nav.map((n) => (
