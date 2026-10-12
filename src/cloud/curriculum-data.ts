@@ -40,7 +40,7 @@ export class CurriculumError extends Error {
 }
 export function logCurriculumError(error: unknown, stage = "load") {
   // Deliberately do not log the error object, request, response, headers, session or payload.
-  console.error("[Hanzi Quest] curriculum", {
+  console.error("[HanziOne] curriculum", {
     stage: error instanceof CurriculumError ? error.stage : stage,
     name: error instanceof Error ? error.name : "Error",
     message: safeErrorMessage(error),

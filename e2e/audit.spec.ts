@@ -398,7 +398,7 @@ test("audit controls: profile, all navigation/CTAs, notebook, flashcards, canvas
       .click();
     await page.getByRole("button", { name: "Đóng bài học" }).click();
     await page
-      .getByRole("button", { name: "Hanzi Quest, về tổng quan" })
+      .getByRole("button", { name: "HanziOne, về tổng quan" })
       .click();
   }
   for (const label of [

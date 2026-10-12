@@ -132,7 +132,7 @@ MCP tools vẫn chỉ đọc giáo trình công khai, không nhận JWT hoặc d
 
 ## 10. Kiểm tra và sao lưu
 
-Nếu API `lessons` và `learning_snapshot` đều HTTP 200 nhưng app không mở, xem Console với tiền tố `[Hanzi Quest] curriculum`. Log chỉ chứa stage, thông điệp đã lọc credential và đường dẫn Zod của bài/trường lỗi; không chứa session hoặc response payload. Bản sửa production loại bỏ dynamic import sau khi tải giáo trình và tắt module preload cho HTML một file, xử lý lỗi `__VITE_PRELOAD__ is not defined`. Không chạy lại migrations hoặc xóa LocalStorage để xử lý lỗi JavaScript này. Sau Render deploy commit mới, tải lại trang; giữ nguyên cache tiến độ và hàng đợi.
+Nếu API `lessons` và `learning_snapshot` đều HTTP 200 nhưng app không mở, xem Console với tiền tố `[HanziOne] curriculum`. Log chỉ chứa stage, thông điệp đã lọc credential và đường dẫn Zod của bài/trường lỗi; không chứa session hoặc response payload. Bản sửa production loại bỏ dynamic import sau khi tải giáo trình và tắt module preload cho HTML một file, xử lý lỗi `__VITE_PRELOAD__ is not defined`. Không chạy lại migrations hoặc xóa LocalStorage để xử lý lỗi JavaScript này. Sau Render deploy commit mới, tải lại trang; giữ nguyên cache tiến độ và hàng đợi.
 
 ```sh
 npm test

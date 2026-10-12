@@ -4,7 +4,7 @@ export async function openStandalone(url: string) {
     window.location.assign(url);
     return;
   }
-  const app = new McpApp({ name: "Hanzi Quest Auth", version: "1.0.0" }, {});
+  const app = new McpApp({ name: "HanziOne Auth", version: "1.0.0" }, {});
   try {
     await app.connect();
     await app.openLink({ url });
@@ -18,7 +18,7 @@ export async function connectHost(
 ) {
   if (window.parent === window) return null;
   const app = new McpApp(
-    { name: "Hanzi Quest", version: "1.0.0" },
+    { name: "HanziOne", version: "1.0.0" },
     {},
     { autoResize: true },
   );

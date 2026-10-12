@@ -402,13 +402,13 @@ export default function App() {
         <button
           className="brand"
           onClick={() => changePage("home")}
-          aria-label="Hanzi Quest, về tổng quan"
+          aria-label="HanziOne, về tổng quan"
         >
           <div className="brand-icon">
             汉<span>✦</span>
           </div>
           <div>
-            hanzi<span>quest</span>
+            Hanzi<span>One</span>
             <small>HỌC NHỎ. MƠ LỚN.</small>
           </div>
         </button>
@@ -1513,7 +1513,7 @@ export default function App() {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `hanzi-quest-${dateKey()}.json`;
+                    a.download = `hanzione-${dateKey()}.json`;
                     a.click();
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                   }}

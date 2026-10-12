@@ -41,7 +41,7 @@ export function makeServer() {
     server,
     "open_hanzi_quest",
     {
-      title: "Open Hanzi Quest",
+      title: "Open HanziOne",
       description:
         "Open the Vietnamese-language Chinese learning application. Account progress is private to the authenticated UI and not available to this public MCP server.",
       inputSchema: z.object({}),
@@ -56,7 +56,7 @@ export function makeServer() {
       content: [
         {
           type: "text" as const,
-          text: "Hanzi Quest mở ra hành trình 10 bài mẫu từ nhập môn đến HSK 3. UI hỗ trợ tài khoản Supabase khi được cấu hình; MCP server không đọc dữ liệu cá nhân hoặc tự đánh dấu hoàn thành.",
+          text: "HanziOne mở ra hành trình 10 bài mẫu từ nhập môn đến HSK 3. UI hỗ trợ tài khoản Supabase khi được cấu hình; MCP server không đọc dữ liệu cá nhân hoặc tự đánh dấu hoàn thành.",
         },
       ],
       structuredContent: {
@@ -102,7 +102,7 @@ export function makeServer() {
     {
       title: "Preview Chinese lesson",
       description:
-        "Preview lesson content in Hanzi Quest. Does not grant progress or unlock lessons.",
+        "Preview lesson content in HanziOne. Does not grant progress or unlock lessons.",
       inputSchema: z.object({
         lessonId: z.enum(lessons.map((l) => l.id) as [string, ...string[]]),
       }),
@@ -180,6 +180,6 @@ http.listen(
   process.env.HOST || (process.env.PORT ? "0.0.0.0" : "127.0.0.1"),
   () =>
     console.log(
-      `Hanzi Quest: http://127.0.0.1:${port} · MCP: http://127.0.0.1:${port}/mcp`,
+      `HanziOne: http://127.0.0.1:${port} · MCP: http://127.0.0.1:${port}/mcp`,
     ),
 );

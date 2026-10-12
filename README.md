@@ -1,4 +1,4 @@
-# Hanzi Quest — Hành trình chinh phục tiếng Trung
+# HanziOne — Hành trình chinh phục tiếng Trung
 
 Ứng dụng React + TypeScript dành cho người Việt, với giao diện xanh lá/kem, linh vật Bao được vẽ riêng bằng SVG và trải nghiệm standalone hoặc MCP Apps.
 

@@ -29,7 +29,7 @@ assert.equal(resources.resources[0].mimeType, "text/html;profile=mcp-app");
 const content = await client.readResource({ uri: resources.resources[0].uri });
 assert.ok(
   "text" in content.contents[0] &&
-    content.contents[0].text.includes("Hanzi Quest"),
+    content.contents[0].text.includes("HanziOne"),
 );
 assert.ok(
   "text" in content.contents[0] &&

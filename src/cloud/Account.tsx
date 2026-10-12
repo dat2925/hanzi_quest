@@ -74,7 +74,7 @@ function AuthForm({
       <div className="auth-shell">
         <section className="card auth-card">
           <Panda />
-          <h1>Tài khoản Hanzi Quest</h1>
+          <h1>Tài khoản HanziOne</h1>
           <p>
             Đăng nhập và đồng bộ trong website độc lập. Phiên Supabase không
             được chuyển qua iframe hoặc tài khoản ChatGPT.
@@ -153,7 +153,7 @@ function AuthForm({
     <div className="auth-shell">
       <section className="card auth-card">
         <Panda />
-        <span className="eyebrow">HANZI QUEST · CÙNG BAO TIẾN BỘ</span>
+        <span className="eyebrow">HANZIONE · CÙNG BAO TIẾN BỘ</span>
         <h1>
           {mode === "signup"
             ? "Tạo tài khoản"
