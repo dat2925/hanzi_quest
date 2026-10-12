@@ -51,6 +51,7 @@ export type Database = {
         updated_at: string;
       }>;
       courses: Table<{
+        curriculum_family: "sample" | "foundation" | "HSK";
         id: string;
         title: string;
         description: string;
@@ -58,6 +59,10 @@ export type Database = {
         syllabus_version: string;
         sort_order: number;
         is_published: boolean;
+      }>;
+      lesson_prerequisites: Table<{
+        lesson_id: string;
+        requires_lesson_id: string;
       }>;
       units: Table<{
         id: string;

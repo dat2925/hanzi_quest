@@ -73,6 +73,15 @@ async function shot(page: Page, folder: string, name: string, fullPage = true) {
     animations: "disabled",
   });
 }
+async function openLegacy(page: Page) {
+  await nav(page, "Hành trình");
+  await page.locator(".sample-library summary").click();
+  await page
+    .locator(".sample-library")
+    .getByRole("button", { name: /你好! Xin chào/ })
+    .click();
+  await page.getByRole("button", { name: "Bắt đầu học", exact: true }).click();
+}
 async function intro(page: Page) {
   await page.getByRole("button", { name: "Mình đã hiểu, thử nào" }).click();
 }
@@ -127,8 +136,10 @@ async function solve(page: Page, q: Question, wrong = false) {
       await dialog
         .getByRole("button", { name: "Nghe phát âm", exact: true })
         .click();
-      await dialog.locator("summary").click();
-      await expect(dialog.locator("details")).toHaveAttribute("open", "");
+      if (wrong) {
+        await dialog.locator("summary").click();
+        await expect(dialog.locator("details")).toHaveAttribute("open", "");
+      }
     }
     const answer = wrong ? q.options.find((o) => o !== q.answer)! : q.answer;
     await dialog
@@ -181,18 +192,27 @@ for (const device of [
     await page.getByRole("button", { name: "Đóng thiết lập" }).click();
     for (const [index, lesson] of lessons.entries()) {
       await nav(page, "Hành trình");
+      const library = page.locator(".sample-library");
+      if (!(await library.getAttribute("open")))
+        await library.locator("summary").click();
       if (index < lessons.length - 1) {
         await page
-          .getByRole("button", { name: new RegExp(`^${index + 2}\\. `) })
+          .getByRole("button", {
+            name: new RegExp(
+              lessons[index + 1].title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            ),
+          })
           .click();
         await expect(
-          page.getByText("Hoàn thành chặng trước với ít nhất 70%"),
+          page.getByText("Hoàn thành các bài tiên quyết với ít nhất 70%"),
         ).toBeVisible();
         await page.getByRole("button", { name: "Đóng xem trước" }).click();
       }
       if (index === 0) await shot(page, device.name, "03-path");
       await page
-        .getByRole("button", { name: new RegExp(`^${index + 1}\\. `) })
+        .getByRole("button", {
+          name: new RegExp(lesson.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+        })
         .click();
       await page
         .getByRole("button", { name: "Bắt đầu học", exact: true })
@@ -216,7 +236,10 @@ for (const device of [
       expect(p.xp).toBe((index + 1) * 40);
     }
     await nav(page, "Hành trình");
-    await page.getByRole("button", { name: /^1\. / }).click();
+    const library = page.locator(".sample-library");
+    if (!(await library.getAttribute("open")))
+      await library.locator("summary").click();
+    await library.getByRole("button", { name: /你好! Xin chào/ }).click();
     await page
       .getByRole("button", { name: "Bắt đầu học", exact: true })
       .click();
@@ -224,7 +247,9 @@ for (const device of [
     for (const q of lessons[0].questions) await solve(page, q);
     await finish(page, 4, 4);
     await expect(
-      page.getByRole("button", { name: /^1\. .*Đã thành thạo/ }),
+      page
+        .locator(".sample-library")
+        .getByRole("button", { name: /你好! Xin chào.*Đã hoàn thành/ }),
     ).toBeVisible();
     expect((await storage(page)).completed).toHaveLength(10);
     expect((await storage(page)).xp).toBe(410);
@@ -251,6 +276,26 @@ for (const mode of [
 ]) {
   test(`audit practice: ${mode}`, async ({ page }) => {
     await page.goto("/");
+    await page.evaluate(
+      ({ allWords, completed }) => {
+        const p = JSON.parse(localStorage.getItem("hanzi-quest-v1")!);
+        p.completed = completed;
+        p.reviews = Object.fromEntries(
+          allWords.map((w) => [
+            w.hanzi,
+            {
+              due: Date.now() + 86400000,
+              interval: 1,
+              attempts: 1,
+              correct: 1,
+            },
+          ]),
+        );
+        localStorage.setItem("hanzi-quest-v1", JSON.stringify(p));
+      },
+      { allWords, completed: ["hello", "tones", "hsk1"] },
+    );
+    await page.reload();
     if (["Ôn lỗi sai", "Ôn tập đến hạn"].includes(mode)) {
       // Isolated browser fixture to trigger a due review without waiting 10 minutes.
       await page.evaluate(() => {
@@ -308,23 +353,23 @@ for (const mode of [
     for (const q of qs) await solve(page, q);
     await finish(page, qs.length, qs.length);
     const p = await storage(page);
-    expect(p.completed).toEqual([]);
+    expect(p.completed).toEqual(["hello", "tones", "hsk1"]);
     expect(p.history).toHaveLength(1);
     if (["Ôn lỗi sai", "Ôn tập đến hạn"].includes(mode))
       expect(p.reviews["茶"].due).toBeGreaterThan(Date.now() + 23 * 3600000);
     if (mode === "Thanh điệu") {
-      expect(Object.keys(p.reviews).sort()).toEqual(["妈", "马", "骂"].sort());
-      expect(p.reviews["你好"]).toBeUndefined();
+      expect(p.reviews["妈"].attempts).toBe(2);
+      expect(p.reviews["你好"].attempts).toBe(1);
     }
     await page.reload();
-    expect((await storage(page)).xp).toBe(40);
+    expect((await storage(page)).xp).toBe(10);
   });
 }
 test("audit failure: incorrect answers, matching retry, no unlock and short review", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Bắt đầu bài học tiếp theo" }).click();
+  await openLegacy(page);
   await intro(page);
   for (const q of lessons[0].questions) await solve(page, q, true);
   await finish(page, 0, 4);
@@ -397,9 +442,7 @@ test("audit controls: profile, all navigation/CTAs, notebook, flashcards, canvas
       .getByRole("button", { name: "Học bài tiếp theo", exact: true })
       .click();
     await page.getByRole("button", { name: "Đóng bài học" }).click();
-    await page
-      .getByRole("button", { name: "HanziOne, về tổng quan" })
-      .click();
+    await page.getByRole("button", { name: "HanziOne, về tổng quan" }).click();
   }
   for (const label of [
     "Khám phá tất cả",
@@ -418,12 +461,24 @@ test("audit controls: profile, all navigation/CTAs, notebook, flashcards, canvas
     page.getByRole("button", { name: "Ôn ngay", exact: true }),
   ).toBeDisabled();
   await expect(
-    page
-      .locator(".practice-grid button")
-      .filter({
-        has: page.getByRole("heading", { name: "Ôn lỗi sai", exact: true }),
-      }),
+    page.locator(".practice-grid button").filter({
+      has: page.getByRole("heading", { name: "Ôn lỗi sai", exact: true }),
+    }),
   ).toBeDisabled();
+  await page.evaluate(() => {
+    const p = JSON.parse(localStorage.getItem("hanzi-quest-v1")!);
+    p.reviews = {
+      你好: {
+        due: Date.now() + 86400000,
+        interval: 1,
+        attempts: 1,
+        correct: 1,
+      },
+    };
+    localStorage.setItem("hanzi-quest-v1", JSON.stringify(p));
+  });
+  await page.reload();
+  await nav(page, "Luyện tập");
   await page
     .locator(".practice-grid button")
     .filter({
@@ -529,7 +584,7 @@ test("audit reload during an unfinished lesson does not invent completion", asyn
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Bắt đầu bài học tiếp theo" }).click();
+  await openLegacy(page);
   await intro(page);
   await solve(page, lessons[0].questions[0]);
   await page.reload();

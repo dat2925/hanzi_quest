@@ -9,7 +9,21 @@ import {
   RESOURCE_MIME_TYPE,
 } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
-import { lessons, stages } from "../src/data.js";
+import { lessons as samples } from "../src/data.js";
+import { demo } from "../src/learning/demo.js";
+const lessons = [demo, ...samples];
+const stages = lessons.map((l) => l.title);
+const mediaOrigins = (process.env.MEDIA_ASSET_ORIGINS || "")
+  .split(",")
+  .filter(Boolean)
+  .map((value) => {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" || url.username || url.password)
+      throw new Error(
+        "MEDIA_ASSET_ORIGINS requires HTTPS origins without credentials",
+      );
+    return url.origin;
+  });
 const resourceUri = "ui://hanzi-quest/app.html";
 const htmlPath = fileURLToPath(new URL("../dist/index.html", import.meta.url));
 export function makeServer() {
@@ -28,6 +42,10 @@ export function makeServer() {
                 ? [new URL(process.env.VITE_SUPABASE_URL).origin]
                 : [],
               resourceDomains: [
+                ...mediaOrigins,
+                ...(process.env.VITE_SUPABASE_URL
+                  ? [new URL(process.env.VITE_SUPABASE_URL).origin]
+                  : []),
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
               ],
@@ -56,7 +74,7 @@ export function makeServer() {
       content: [
         {
           type: "text" as const,
-          text: "HanziOne mở ra hành trình 10 bài mẫu từ nhập môn đến HSK 3. UI hỗ trợ tài khoản Supabase khi được cấu hình; MCP server không đọc dữ liệu cá nhân hoặc tự đánh dấu hoàn thành.",
+          text: "HanziOne có bài nhập môn cho người mới và kho 10 bài mẫu riêng. UI hỗ trợ tài khoản Supabase khi được cấu hình; MCP server không đọc dữ liệu cá nhân hoặc tự đánh dấu hoàn thành.",
         },
       ],
       structuredContent: {

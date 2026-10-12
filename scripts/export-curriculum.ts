@@ -12,6 +12,10 @@ const bundleSchema = z.object({
   lessons: z.array(lessonSchema).min(1),
 });
 const [input, output] = process.argv.slice(2);
+if (input && input !== "--sample")
+  throw new Error(
+    "Dùng scripts/import-curriculum.ts để validate và nhập giáo trình mới. Script này chỉ xuất bản sao bài mẫu.",
+  );
 const bundle = bundleSchema.parse(
   input && input !== "--sample"
     ? JSON.parse(readFileSync(input, "utf8"))
@@ -85,7 +89,16 @@ if (!output)
   throw new Error(
     "Usage: npx tsx scripts/export-curriculum.ts --sample output.sql (or input.json output.sql)",
   );
-writeFileSync(output, sql.join("\n"), "utf8");
+writeFileSync(
+  output,
+  sql
+    .join("\n")
+    .replace(
+      /on conflict\([^)]*\) do update set [^;]+/g,
+      "on conflict do nothing",
+    ),
+  { encoding: "utf8", flag: "wx" },
+);
 console.log(
   `Exported ${bundle.lessons.length} lessons, ${words.length} vocabulary items to ${output}`,
 );

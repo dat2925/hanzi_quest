@@ -1,3 +1,5 @@
+import { demo } from "./learning/demo";
+import { CourseBrowser } from "./learning/CourseBrowser";
 import { useEffect, useState } from "react";
 import {
   Home,
@@ -33,13 +35,13 @@ import {
   Download,
   Maximize2,
 } from "lucide-react";
-import { lessons, stages, allWords as words, type Lesson } from "./data";
+import { lessons as catalog, allWords as words, type Lesson } from "./data";
 import {
   load,
   complete,
   streak,
   dateKey,
-  available,
+  canStudy,
   STORAGE_KEY,
   initial,
   schedule,
@@ -91,8 +93,13 @@ function SectionTitle({
   );
 }
 export default function App() {
-  const ids = lessons.map((l) => l.id);
   const account = useAccount();
+  const [, refreshCurriculum] = useState(0);
+  const lessons = [
+    ...(!account.manager && !catalog.some((l) => l.learning) ? [demo] : []),
+    ...catalog,
+  ].sort((a, b) => Number(!a.learning) - Number(!b.learning));
+  const ids = lessons.map((l) => l.id);
   const manager = account.manager;
   const [p, setP] = useState(() => (manager ? manager.progress : load()));
   const [resume, setResume] = useState<GameSnapshot | undefined>();
@@ -222,7 +229,10 @@ export default function App() {
     const t = setTimeout(() => setMessage(""), 6500);
     return () => clearTimeout(t);
   }, [message]);
-  const nextIndex = lessons.findIndex((l) => !p.completed.includes(l.id));
+  const nextIndex = lessons.findIndex(
+    (l) =>
+      !!l.learning && !p.completed.includes(l.id) && canStudy(p, l, lessons),
+  );
   const current = lessons[Math.max(0, nextIndex)];
   const today = p.history.filter((h) => h.date === dateKey());
   const minutes = today.reduce((sum, h) => sum + h.minutes, 0);
@@ -244,6 +254,10 @@ export default function App() {
   function practiceGame(kind: string) {
     setFlashMode(false);
     setWriteMode(false);
+    if (!learned.length) {
+      setMessage("Hãy học bài nhập môn trước để có từ ôn tập.");
+      return;
+    }
     if (kind === "Flashcard") {
       setFlashMode(true);
       setPage("practice");
@@ -254,6 +268,12 @@ export default function App() {
       setPage("practice");
       return;
     }
+    const knownWords = words.filter((w) => p.reviews[w.hanzi]);
+    if (!knownWords.length) {
+      setMessage("Hãy học bài nhập môn trước để có từ ôn tập.");
+      return;
+    }
+    const practiceLessons = lessons.filter((l) => p.completed.includes(l.id));
     const pool =
       kind === "Ôn lỗi sai"
         ? p.difficult
@@ -262,11 +282,13 @@ export default function App() {
           : [];
     const selected =
       kind === "Thanh điệu"
-        ? lessons.find((l) => l.id === "tones")!.words
+        ? practiceLessons
+            .filter((l) => l.questions.some((q) => q.type === "tone"))
+            .flatMap((l) => l.words)
         : kind === "Sắp xếp câu"
           ? [
               ...new globalThis.Map(
-                lessons
+                practiceLessons
                   .flatMap((l) =>
                     l.questions.some((q) => q.type === "sentence")
                       ? l.words
@@ -276,20 +298,19 @@ export default function App() {
               ).values(),
             ]
           : pool.length
-            ? words.filter((w) => pool.includes(w.hanzi))
-            : words.slice(0, 6);
+            ? knownWords.filter((w) => pool.includes(w.hanzi))
+            : knownWords.slice(0, 6);
     let qs =
       kind === "Thanh điệu"
-        ? lessons.find((l) => l.id === "tones")!.questions
+        ? practiceLessons.flatMap((l) =>
+            l.questions.filter((q) => q.type === "tone"),
+          )
         : kind === "Sắp xếp câu"
-          ? ["hello", "hsk1"].flatMap(
-              (id) =>
-                lessons
-                  .find((l) => l.id === id)
-                  ?.questions.filter((q) => q.type === "sentence") || [],
+          ? practiceLessons.flatMap((l) =>
+              l.questions.filter((q) => q.type === "sentence"),
             )
           : kind === "Ghép cặp"
-            ? lessons
+            ? practiceLessons
                 .flatMap((l) => l.questions.filter((q) => q.type === "match"))
                 .slice(0, 1)
             : selected.map((w) => ({
@@ -305,7 +326,7 @@ export default function App() {
                   kind === "Nghe"
                     ? [
                         w.hanzi,
-                        ...words
+                        ...knownWords
                           .filter((x) => x.hanzi !== w.hanzi)
                           .slice(0, 3)
                           .map((x) => x.hanzi),
@@ -313,14 +334,14 @@ export default function App() {
                     : kind === "Pinyin"
                       ? [
                           w.pinyin,
-                          ...words
+                          ...knownWords
                             .filter((x) => x.pinyin !== w.pinyin)
                             .slice(0, 3)
                             .map((x) => x.pinyin),
                         ]
                       : [
                           w.meaning,
-                          ...words
+                          ...knownWords
                             .filter((x) => x.meaning !== w.meaning)
                             .slice(0, 3)
                             .map((x) => x.meaning),
@@ -333,9 +354,15 @@ export default function App() {
                       : w.meaning,
                 explanation: `${w.hanzi} · ${w.pinyin} → ${w.meaning}`,
               }));
+    if (!qs.length) {
+      setMessage("Chưa có nội dung đã học phù hợp với chế độ này.");
+      return;
+    }
     start(
       {
         ...current,
+        learning: undefined,
+        prerequisites: undefined,
         id: "practice",
         title: kind,
         guide:
@@ -384,6 +411,10 @@ export default function App() {
     setPage(id);
     setFlashMode(false);
     setWriteMode(false);
+    if (!learned.length) {
+      setMessage("Hãy học bài nhập môn trước để có từ ôn tập.");
+      return;
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   const greeting = (
@@ -806,7 +837,7 @@ export default function App() {
                     <div className="row">
                       <b>
                         {p.completed.length}
-                        <small> / {lessons.length} bài mẫu</small>
+                        <small> / {lessons.length} bài đã tải</small>
                       </b>
                       <span>
                         {Math.round(
@@ -854,6 +885,10 @@ export default function App() {
                 title="Hành trình của bạn"
                 text="Từ lời chào đầu tiên đến những câu chuyện bằng tiếng Trung."
               />
+              <CourseBrowser
+                cloud={!!account.manager}
+                onLoaded={() => refreshCurriculum((n) => n + 1)}
+              />
               <div className="path-layout">
                 <section className="path-map">
                   <div className="path-map-heading">
@@ -861,59 +896,93 @@ export default function App() {
                     <div>
                       <b>Rừng tre khởi đầu</b>
                       <span>
-                        {lessons.length} chặng khám phá · {p.completed.length}{" "}
+                        {lessons.filter((l) => l.learning).length} bài trong
+                        giáo trình ·{" "}
+                        {
+                          lessons.filter(
+                            (l) => l.learning && p.completed.includes(l.id),
+                          ).length
+                        }{" "}
                         chặng hoàn thành
                       </span>
                     </div>
                     <span className="level-pill">{p.goal}</span>
                   </div>
                   <div className="path-trail">
-                    {lessons.map((l, i) => {
-                      const unlocked = available(p, i, ids);
-                      const done = p.completed.includes(l.id);
-                      const mastered =
-                        done &&
-                        p.history.filter(
-                          (h) => h.lesson === l.id && h.accuracy >= 0.9,
-                        ).length >= 2;
-                      return (
-                        <div
-                          className={`path-stop stop-${i % 4} ${done ? "completed" : unlocked ? "available" : "locked"}`}
-                          key={l.id}
-                        >
-                          <button
-                            aria-label={`${i + 1}. ${l.title} — ${mastered ? "Đã thành thạo" : done ? "Hoàn thành" : unlocked ? "Có thể học" : "Xem trước bài khóa"}`}
-                            onClick={() => setPreview(l)}
+                    {lessons
+                      .filter((l) => l.learning)
+                      .map((l, i) => {
+                        const unlocked = canStudy(p, l, lessons);
+                        const done = p.completed.includes(l.id);
+                        const mastered =
+                          done &&
+                          p.history.filter(
+                            (h) => h.lesson === l.id && h.accuracy >= 0.9,
+                          ).length >= 2;
+                        return (
+                          <div
+                            className={`path-stop stop-${i % 4} ${done ? "completed" : unlocked ? "available" : "locked"}`}
+                            key={l.id}
                           >
-                            {mastered ? (
-                              <Star />
-                            ) : done ? (
-                              <Check />
-                            ) : unlocked ? (
-                              <span>{i + 1}</span>
-                            ) : (
-                              <Lock size={21} />
-                            )}
-                          </button>
-                          <div>
-                            <small>
-                              CHẶNG {i + 1} ·{" "}
-                              {mastered
-                                ? "THÀNH THẠO"
-                                : done
-                                  ? "HOÀN THÀNH"
-                                  : unlocked
-                                    ? "SẴN SÀNG"
-                                    : "CHƯA MỞ"}
-                            </small>
-                            <h3>{stages[i]}</h3>
-                            <p>{l.description}</p>
+                            <button
+                              aria-label={`${i + 1}. ${l.title} — ${mastered ? "Đã thành thạo" : done ? "Hoàn thành" : unlocked ? "Có thể học" : "Xem trước bài khóa"}`}
+                              onClick={() => setPreview(l)}
+                            >
+                              {mastered ? (
+                                <Star />
+                              ) : done ? (
+                                <Check />
+                              ) : unlocked ? (
+                                <span>{i + 1}</span>
+                              ) : (
+                                <Lock size={21} />
+                              )}
+                            </button>
+                            <div>
+                              <small>
+                                {l.learning
+                                  ? "GIÁO TRÌNH MỚI"
+                                  : "KHO BÀI MẪU · TÙY CHỌN"}{" "}
+                                · CHẶNG {i + 1} ·{" "}
+                                {mastered
+                                  ? "THÀNH THẠO"
+                                  : done
+                                    ? "HOÀN THÀNH"
+                                    : unlocked
+                                      ? "SẴN SÀNG"
+                                      : "CHƯA MỞ"}
+                              </small>
+                              <h3>{l.title}</h3>
+                              <p>{l.description}</p>
+                            </div>
+                            {i === 0 && <Panda small />}
                           </div>
-                          {i === 0 && <Panda small />}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
+                  <details className="card sample-library">
+                    <summary>Kho 10 bài mẫu cũ · Tùy chọn</summary>
+                    <p>
+                      Các bài mẫu giữ nguyên nội dung và tiến độ cũ. Bạn không
+                      cần hoàn thành kho này để học giáo trình nhập môn.
+                    </p>
+                    {lessons
+                      .filter((l) => !l.learning)
+                      .map((l) => (
+                        <button
+                          className="secondary"
+                          key={l.id}
+                          onClick={() => setPreview(l)}
+                        >
+                          {l.title} ·{" "}
+                          {p.completed.includes(l.id)
+                            ? "Đã hoàn thành"
+                            : canStudy(p, l, lessons)
+                              ? "Có thể học"
+                              : "Xem trước bài khóa"}
+                        </button>
+                      ))}
+                  </details>
                   <div className="path-end">
                     <Flag />
                     <b>Mỗi bước đều đáng tự hào.</b>
@@ -946,7 +1015,7 @@ export default function App() {
                 title="Sân chơi tiếng Trung"
                 text="Chọn một kỹ năng. Dành vài phút. Tốt hơn một chút mỗi ngày."
               />
-              {flashMode ? (
+              {flashMode && learned.length ? (
                 <section className="card flash-section">
                   <SectionTitle
                     action="Đóng flashcard"
@@ -959,10 +1028,10 @@ export default function App() {
                     onClick={() => setFlipped(!flipped)}
                     aria-label="Lật thẻ"
                   >
-                    <b>{words[flash].hanzi}</b>
+                    <b>{learned[flash % learned.length].hanzi}</b>
                     <span>
                       {flipped
-                        ? `${words[flash].pinyin} · ${words[flash].meaning}`
+                        ? `${learned[flash % learned.length].pinyin} · ${learned[flash % learned.length].meaning}`
                         : "Chạm để xem nghĩa"}
                     </span>
                   </button>
@@ -972,12 +1041,15 @@ export default function App() {
                       onClick={() => {
                         patch({
                           difficult: [
-                            ...new Set([...p.difficult, words[flash].hanzi]),
+                            ...new Set([
+                              ...p.difficult,
+                              learned[flash % learned.length].hanzi,
+                            ]),
                           ],
                           reviews: {
                             ...p.reviews,
-                            [words[flash].hanzi]: schedule(
-                              p.reviews[words[flash].hanzi],
+                            [learned[flash % learned.length].hanzi]: schedule(
+                              p.reviews[learned[flash % learned.length].hanzi],
                               false,
                             ),
                           },
@@ -993,13 +1065,13 @@ export default function App() {
                         patch({
                           reviews: {
                             ...p.reviews,
-                            [words[flash].hanzi]: schedule(
-                              p.reviews[words[flash].hanzi],
+                            [learned[flash % learned.length].hanzi]: schedule(
+                              p.reviews[learned[flash % learned.length].hanzi],
                               true,
                             ),
                           },
                         });
-                        setFlash((flash + 1) % words.length);
+                        setFlash((flash + 1) % learned.length);
                         setFlipped(false);
                       }}
                     >
@@ -1007,7 +1079,8 @@ export default function App() {
                     </button>
                   </div>
                   <p>
-                    {flash + 1}/{words.length} thẻ · Tự đánh giá trí nhớ
+                    {(flash % learned.length) + 1}/{learned.length} thẻ · Tự
+                    đánh giá trí nhớ
                   </p>
                 </section>
               ) : writeMode ? (
@@ -1019,10 +1092,17 @@ export default function App() {
                     Nét chữ đầu tiên
                   </SectionTitle>
                   <p>
-                    Viết 一、二、三 từ trên xuống dưới. Mỗi chữ 5 lần trong vở.
-                    Ô bên dưới giúp thử nét; hãy tự đối chiếu mẫu.
+                    Chọn một từ đã học bên dưới, chép vào vở rồi che mẫu và viết
+                    lại. Đối chiếu chữ, Pinyin và nghĩa với mẫu. Ô bên dưới giúp
+                    thử nét.
                   </p>
-                  <div className="writing-examples">一 二 三</div>
+                  <div className="writing-examples">
+                    {learned.slice(0, 3).map((w) => (
+                      <p key={w.hanzi}>
+                        {w.hanzi} · {w.pinyin} · {w.meaning}
+                      </p>
+                    ))}
+                  </div>
                   <WritingPad />
                   <button
                     className="primary"
@@ -1603,14 +1683,14 @@ export default function App() {
                 </span>
               ))}
             </div>
-            {available(p, ids.indexOf(preview.id), ids) ? (
+            {canStudy(p, preview, lessons) ? (
               <button className="primary" onClick={() => start(preview)}>
                 Bắt đầu học <ArrowRight size={18} />
               </button>
             ) : (
               <div className="note-box">
-                <Lock size={17} /> Hoàn thành chặng trước với ít nhất 70% để mở
-                bài này.
+                <Lock size={17} /> Hoàn thành các bài tiên quyết với ít nhất 70%
+                để mở bài này. {preview.prerequisites?.join(", ")}
               </div>
             )}
           </section>
@@ -1764,8 +1844,8 @@ function Onboarding({
               ))}
             </div>
             <div className="note-box">
-              Bản hiện tại có {lessons.length} bài nền tảng và bài mẫu HSK 1–3.
-              Bạn có thể đổi mục tiêu bất cứ lúc nào.
+              Bản hiện tại có một bài nhập môn demo và kho bài mẫu HSK 1–3
+              riêng. Bạn có thể đổi mục tiêu bất cứ lúc nào.
             </div>
           </>
         ) : (

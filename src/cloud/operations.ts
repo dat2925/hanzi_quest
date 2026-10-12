@@ -2,8 +2,13 @@ import type { Question } from "../data";
 import type { Progress } from "../progress";
 import type { GameSnapshot } from "../game-state";
 import type { Json, Operation } from "./database.types";
-export function questionKey(q: Pick<Question, "type" | "prompt" | "audio">) {
-  return JSON.stringify([q.type, q.prompt, q.audio || ""]);
+export function questionKey(
+  q: Pick<Question, "type" | "prompt" | "audio" | "contentId">,
+) {
+  const parts = [q.type, q.prompt, q.audio || ""];
+  // Keep all legacy keys stable; v2 activities have identity independent of their wording.
+  if (q.contentId) parts.push(q.contentId);
+  return JSON.stringify(parts);
 }
 export function operation(
   kind: Operation["kind"],

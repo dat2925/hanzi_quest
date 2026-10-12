@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 2,
+  "courseId": "beginner-v1",
+  "title": "Tiếng Trung từ số 0",
+  "syllabus": {
+    "family": "foundation",
+    "version": "foundation-2026-v1"
+  },
+  "status": "published",
+  "chapters": [
+    {
+      "id": "beginner-intro",
+      "title": "Nhập môn",
+      "description": "Có một bài demo nhập môn."
+    },
+    {
+      "id": "beginner-pinyin",
+      "title": "Pinyin và phát âm",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    },
+    {
+      "id": "beginner-tones",
+      "title": "Thanh điệu",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    },
+    {
+      "id": "beginner-strokes",
+      "title": "Nét chữ Hán",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    },
+    {
+      "id": "beginner-basics",
+      "title": "Từ vựng và giao tiếp cơ bản",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    },
+    {
+      "id": "beginner-hsk1",
+      "title": "HSK 1",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    },
+    {
+      "id": "beginner-hsk2",
+      "title": "HSK 2",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    },
+    {
+      "id": "beginner-hsk3",
+      "title": "HSK 3",
+      "description": "Khung chương — chờ nội dung được biên soạn và duyệt. HSK cần khóa riêng theo phiên bản giáo trình."
+    }
+  ],
+  "lessons": [
+    {
+      "schemaVersion": 2,
+      "id": "intro-one-two-v1",
+      "chapterId": "beginner-intro",
+      "title": "Bước đầu với 一 và 二",
+      "description": "Hai từ, hai âm và nét ngang đầu tiên. Không cần kiến thức trước.",
+      "minutes": 12,
+      "difficulty": 1,
+      "status": "published",
+      "prerequisites": [],
+      "screens": [
+        {
+          "id": "welcome",
+          "kind": "objective",
+          "title": "Bước đầu: đọc và viết một, hai",
+          "body": "Bạn chưa cần biết bất kỳ chữ tiếng Trung nào. Chuẩn bị vở và bút. Sau bài này, bạn nhận ra 一 và 二, hiểu Pinyin, nghe thử hai âm và tự viết hai chữ. Chỉ học hai từ mới; không cần thuộc cả bảng phiên âm.",
+          "steps": [
+            "Học cách nhìn chữ, phiên âm và nghĩa.",
+            "Nghe, nhận diện rồi ghép hai cặp.",
+            "Viết vào vở, ứng dụng và kiểm tra lại."
+          ]
+        },
+        {
+          "id": "three-layers",
+          "kind": "explanation",
+          "title": "Một từ có ba phần để bạn làm quen",
+          "body": "Chữ Hán là dạng viết. Pinyin là cách ghi âm bằng chữ Latin, không phải bản dịch. Nghĩa tiếng Việt cho biết từ nói về điều gì. Ví dụ: 一 · yī · một. Dấu ngang trên ī là dấu thanh, không phải nét chữ Hán.",
+          "introduces": [
+            "pinyin-role"
+          ],
+          "examples": [
+            {
+              "hanzi": "一",
+              "pinyin": "yī",
+              "meaning": "Một"
+            }
+          ]
+        },
+        {
+          "id": "two-words",
+          "kind": "vocabulary",
+          "title": "Chỉ hai từ mới",
+          "body": "Hãy nhìn từng chữ, đọc Pinyin và nói nghĩa. 一 có một nét ngang; 二 có hai nét ngang. Các ví dụ dưới đây dùng từ đứng riêng để chỉ số lượng.",
+          "introduces": [
+            "number-one",
+            "number-two"
+          ],
+          "words": [
+            {
+              "hanzi": "一",
+              "pinyin": "yī",
+              "meaning": "Một",
+              "tones": [
+                1
+              ],
+              "example": {
+                "hanzi": "一",
+                "pinyin": "yī",
+                "meaning": "Một — khi đếm một vật"
+              }
+            },
+            {
+              "hanzi": "二",
+              "pinyin": "èr",
+              "meaning": "Hai",
+              "tones": [
+                4
+              ],
+              "example": {
+                "hanzi": "二",
+                "pinyin": "èr",
+                "meaning": "Hai — khi đếm hai vật"
+              }
+            }
+          ]
+        },
+        {
+          "id": "recognize-one",
+          "kind": "exercise",
+          "title": "Nhận diện ngay",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "practice",
+          "question": {
+            "type": "quiz",
+            "prompt": "一 có nghĩa là gì?",
+            "options": [
+              "Một",
+              "Hai"
+            ],
+            "answer": "Một",
+            "knowledge": [
+              "number-one"
+            ],
+            "explanation": "一 · yī là một. Hình chữ có một nét ngang.",
+            "hint": "Quay lại phần giải thích: 一 · yī là một. Hình chữ có một nét ngang."
+          }
+        },
+        {
+          "id": "sound-one",
+          "kind": "pronunciation",
+          "title": "Nghe yī: giữ giọng tương đối cao và đều",
+          "body": "Trong yī, dấu ngang là thanh 1. Nghe rồi kéo âm i ngắn, đều, không lên xuống. Chữ y giúp ghi âm trong Pinyin; không đọc tách thành hai tiếng. Lặp lại ba lần, nghỉ giữa mỗi lần. Nếu thiết bị không có giọng tiếng Trung, bạn vẫn có thể xem Pinyin và quay lại nghe sau.",
+          "introduces": [
+            "tone-one"
+          ],
+          "speech": "一",
+          "steps": [
+            "Bấm nghe, chú ý đường giọng đều.",
+            "Đọc yī chậm; tránh thêm âm cuối.",
+            "Đọc lại và tự nghe xem giọng có bị hạ xuống không."
+          ]
+        },
+        {
+          "id": "sound-two",
+          "kind": "pronunciation",
+          "title": "Nghe èr: giọng đi xuống",
+          "body": "Trong èr, dấu huyền biểu thị thanh 4 của tiếng Trung: đi từ cao xuống thấp khá nhanh. Không đồng nhất nó với thanh huyền tiếng Việt. Âm èr có màu âm uốn lưỡi; nghe mẫu để làm quen, không đọc thành hai tiếng e-rờ. Bài này chỉ cần phân biệt một và hai, chưa chấm phát âm.",
+          "introduces": [
+            "tone-four"
+          ],
+          "speech": "二",
+          "steps": [
+            "Nghe èr, dùng tay vẽ đường đi xuống.",
+            "Đọc một âm liền, không thêm tiếng rờ.",
+            "So sánh yī (đều) với èr (đi xuống)."
+          ]
+        },
+        {
+          "id": "listen-one",
+          "kind": "exercise",
+          "title": "Nghe và nhận ra",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "practice",
+          "question": {
+            "type": "listen",
+            "prompt": "Nghe rồi chọn chữ vừa nghe",
+            "options": [
+              "一",
+              "二"
+            ],
+            "answer": "一",
+            "knowledge": [
+              "number-one",
+              "number-two"
+            ],
+            "explanation": "Âm yī ứng với 一, nghĩa là một. 二 đọc là èr.",
+            "hint": "Quay lại phần giải thích: Âm yī ứng với 一, nghĩa là một. 二 đọc là èr.",
+            "audio": "一"
+          }
+        },
+        {
+          "id": "pairs",
+          "kind": "exercise",
+          "title": "Trò chơi ghép cặp",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "practice",
+          "question": {
+            "type": "match",
+            "prompt": "Ghép hai chữ với nghĩa",
+            "options": [
+              "一|Một",
+              "二|Hai"
+            ],
+            "answer": "matched",
+            "knowledge": [
+              "number-one",
+              "number-two"
+            ],
+            "explanation": "一 là một; 二 là hai. Đếm số nét ngang giúp bạn nhớ.",
+            "hint": "Quay lại phần giải thích: 一 là một; 二 là hai. Đếm số nét ngang giúp bạn nhớ."
+          }
+        },
+        {
+          "id": "write-how",
+          "kind": "explanation",
+          "title": "Viết nét ngang như thế nào?",
+          "body": "Bắt đầu từ trái sang phải. 一 có một nét ngang. 二 viết nét ngang trên trước, nét ngang dưới sau; nét dưới dài hơn nét trên. Đặt chữ ở giữa ô vuông, để khoảng trống giữa hai nét. Không cần viết nhanh.",
+          "introduces": [
+            "horizontal-stroke"
+          ],
+          "steps": [
+            "Kẻ ô vuông nhỏ trong vở.",
+            "Viết 一 bằng một nét từ trái sang phải.",
+            "Viết 二: nét trên ngắn, nét dưới dài hơn."
+          ]
+        },
+        {
+          "id": "notebook-task",
+          "kind": "notebook",
+          "title": "Lấy vở ra và thử viết",
+          "body": "Viết mỗi chữ ba lần, đọc yī hoặc èr khi viết. Sau đó che mẫu, viết mỗi chữ một lần và tự đối chiếu. Ô thử nét trên màn hình là tùy chọn; nhiệm vụ chính làm trong vở.",
+          "checklist": [
+            "Tôi viết 一 bằng một nét và 二 bằng hai nét.",
+            "Tôi viết nét ngang từ trái sang phải, nét trên trước nét dưới.",
+            "Tôi che mẫu, viết lại và sửa chỗ chưa giống."
+          ]
+        },
+        {
+          "id": "apply-model",
+          "kind": "explanation",
+          "title": "Dùng điều vừa học để đếm",
+          "body": "Khi thấy một chấm ●, ta có thể ghi 一 (một). Khi thấy hai chấm ● ●, ta ghi 二 (hai). Hôm nay chỉ ghi con số đứng riêng. 一 có thể đổi thanh trong một số cụm từ; bài này dùng yī khi đọc riêng, bạn sẽ học cách đổi thanh sau.",
+          "examples": [
+            {
+              "hanzi": "一",
+              "pinyin": "yī",
+              "meaning": "● — một chấm"
+            },
+            {
+              "hanzi": "二",
+              "pinyin": "èr",
+              "meaning": "● ● — hai chấm"
+            }
+          ]
+        },
+        {
+          "id": "apply-two",
+          "kind": "exercise",
+          "title": "Thử ứng dụng",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "application",
+          "question": {
+            "type": "quiz",
+            "prompt": "Có ● ● trên bàn. Chọn số phù hợp.",
+            "options": [
+              "一",
+              "二"
+            ],
+            "answer": "二",
+            "knowledge": [
+              "number-one",
+              "number-two"
+            ],
+            "explanation": "Hai chấm tương ứng 二 · èr · hai.",
+            "hint": "Quay lại phần giải thích: Hai chấm tương ứng 二 · èr · hai."
+          }
+        },
+        {
+          "id": "recall",
+          "kind": "review",
+          "title": "Nhớ lại trước khi kiểm tra",
+          "body": "Che hai dòng gợi nhớ bên dưới. Tự nói: một viết thế nào, hai đọc ra sao? Sau đó mở mẫu để đối chiếu. Kiểm tra tiếp theo chỉ hỏi hai từ và vai trò của Pinyin đã học.",
+          "examples": [
+            {
+              "hanzi": "一",
+              "pinyin": "yī",
+              "meaning": "Một"
+            },
+            {
+              "hanzi": "二",
+              "pinyin": "èr",
+              "meaning": "Hai"
+            }
+          ]
+        },
+        {
+          "id": "final-number",
+          "kind": "exercise",
+          "title": "Kiểm tra cuối bài · 1/3",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "final",
+          "question": {
+            "type": "quiz",
+            "prompt": "Chữ nào có nghĩa là hai?",
+            "options": [
+              "一",
+              "二"
+            ],
+            "answer": "二",
+            "knowledge": [
+              "number-one",
+              "number-two"
+            ],
+            "explanation": "二 · èr nghĩa là hai; 一 · yī nghĩa là một.",
+            "hint": "Quay lại phần giải thích: 二 · èr nghĩa là hai; 一 · yī nghĩa là một."
+          }
+        },
+        {
+          "id": "final-pinyin",
+          "kind": "exercise",
+          "title": "Kiểm tra cuối bài · 2/3",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "final",
+          "question": {
+            "type": "quiz",
+            "prompt": "Pinyin giúp bạn làm gì?",
+            "options": [
+              "Ghi cách đọc",
+              "Dịch nghĩa sang tiếng Việt"
+            ],
+            "answer": "Ghi cách đọc",
+            "knowledge": [
+              "pinyin-role"
+            ],
+            "explanation": "Pinyin ghi cách đọc. Nghĩa tiếng Việt là một phần riêng.",
+            "hint": "Quay lại phần giải thích: Pinyin ghi cách đọc. Nghĩa tiếng Việt là một phần riêng."
+          }
+        },
+        {
+          "id": "final-tone",
+          "kind": "exercise",
+          "title": "Kiểm tra cuối bài · 3/3",
+          "body": "Chỉ dùng kiến thức vừa được giới thiệu.",
+          "phase": "final",
+          "question": {
+            "type": "quiz",
+            "prompt": "Khi đọc riêng, 一 có Pinyin nào?",
+            "options": [
+              "yī",
+              "èr"
+            ],
+            "answer": "yī",
+            "knowledge": [
+              "number-one",
+              "number-two",
+              "tone-one"
+            ],
+            "explanation": "一 đọc riêng là yī, thanh 1 đều; 二 là èr, thanh 4 đi xuống.",
+            "hint": "Quay lại phần giải thích: 一 đọc riêng là yī, thanh 1 đều; 二 là èr, thanh 4 đi xuống."
+          }
+        },
+        {
+          "id": "review-plan",
+          "kind": "srs",
+          "title": "Lưu kết quả để hẹn lần ôn tiếp theo",
+          "body": "Sau khi bạn bấm Lưu kết quả, hệ thống lập lịch ôn cho từ được kiểm tra: từ đúng ôn sau 1 ngày rồi 2, 4, 8 ngày… tối đa 30 ngày; từ sai ôn sau 10 phút. Một từ có bất kỳ lần sai nào trong bài sẽ được ưu tiên ôn sớm. Điểm tính từ các lượt kiểm tra; dùng gợi ý hoặc ghép sai không tính là nhớ đúng ngay lần đầu. Bạn có thể học lại bài bất cứ lúc nào.",
+          "steps": [
+            "Mở Luyện tập → Ôn tập đến hạn để ôn đúng lúc.",
+            "Lần ôn sau: nhớ nghĩa trước, rồi mới nhìn đáp án.",
+            "Trong vở, viết lại 一 và 二 mỗi chữ một lần."
+          ]
+        }
+      ]
+    }
+  ]
+}

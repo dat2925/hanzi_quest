@@ -20,7 +20,15 @@ test("onboarding, all game mechanics, completion, notebook and persistence", asy
   await expect(
     page.getByRole("heading", { name: "Chào Linh, cùng học thôi!" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Bắt đầu bài học tiếp theo" }).click();
+  await page
+    .getByRole("button", { name: "Hành trình", exact: true })
+    .first()
+    .click();
+  await page.getByText("Kho 10 bài mẫu cũ · Tùy chọn", { exact: true }).click();
+  await page
+    .getByRole("button", { name: /你好! Xin chào, tiếng Trung · Có thể học/ })
+    .click();
+  await page.getByRole("button", { name: "Bắt đầu học", exact: true }).click();
   await page.getByRole("button", { name: "Mình đã hiểu, thử nào" }).click();
   await page.screenshot({ path: "test-results/game.png", fullPage: true });
   await page.getByRole("button", { name: /^\d+ 你好$/ }).click();
@@ -81,9 +89,12 @@ test("locked preview, dark mode, flashcards and all pages render", async ({
     .getByRole("button", { name: "Hành trình", exact: true })
     .first()
     .click();
-  await page.getByRole("button", { name: /2. Pinyin/ }).click();
+  await page.getByText("Kho 10 bài mẫu cũ · Tùy chọn", { exact: true }).click();
+  await page
+    .getByRole("button", { name: /Pinyin · Chiếc chìa khóa phát âm/ })
+    .click();
   await expect(
-    page.getByText("Hoàn thành chặng trước với ít nhất 70%"),
+    page.getByText("Hoàn thành các bài tiên quyết với ít nhất 70%"),
   ).toBeVisible();
   await page.getByRole("button", { name: "Đóng xem trước" }).click();
   for (const name of ["Luyện tập", "Sổ tay", "Thống kê", "Cài đặt"])
@@ -91,6 +102,29 @@ test("locked preview, dark mode, flashcards and all pages render", async ({
   await page.getByRole("switch", { name: "Giao diện tối" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.screenshot({ path: "test-results/dark-mode.png", fullPage: true });
+  await page
+    .getByRole("button", { name: "Luyện tập", exact: true })
+    .first()
+    .click();
+  await page.evaluate(() => {
+    const p = JSON.parse(localStorage.getItem("hanzi-quest-v1")!);
+    p.reviews = {
+      你好: {
+        due: Date.now() + 86400000,
+        interval: 1,
+        attempts: 1,
+        correct: 1,
+      },
+      谢谢: {
+        due: Date.now() + 86400000,
+        interval: 1,
+        attempts: 1,
+        correct: 1,
+      },
+    };
+    localStorage.setItem("hanzi-quest-v1", JSON.stringify(p));
+  });
+  await page.reload();
   await page
     .getByRole("button", { name: "Luyện tập", exact: true })
     .first()

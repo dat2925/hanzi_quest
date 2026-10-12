@@ -1,7 +1,7 @@
 import { test, expect, type BrowserContext } from "@playwright/test";
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
-import { lessons } from "../src/data";
+import { beginner } from "../src/learning/demo";
 const ids = {
   a: "20000000-0000-4000-8000-000000000001",
   b: "20000000-0000-4000-8000-000000000002",
@@ -19,6 +19,8 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
     "202610120001_schema.sql",
     "202610120002_sample_content.sql",
     "202610120003_legacy_approval.sql",
+    "202610120004_learning_structure.sql",
+    "202610120005_beginner_demo.sql",
   ])
     await db.exec(
       readFileSync(
@@ -26,6 +28,21 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
         "utf8",
       ),
     );
+  const curriculumRows = (
+    await db.query<any>(
+      `select l.id,l.unit_id,l.content_json,l.sort_order,u.course_id,jsonb_build_object('sort_order',u.sort_order,'courses',jsonb_build_object('sort_order',c.sort_order)) units from public.lessons l join public.units u on u.id=l.unit_id join public.courses c on c.id=u.course_id where l.is_published`,
+    )
+  ).rows;
+  const courseRows = (
+    await db.query(
+      `select id,title,syllabus_version from public.courses where is_published`,
+    )
+  ).rows;
+  const chapterRows = (
+    await db.query<any>(
+      `select id,title,description,course_id from public.units`,
+    )
+  ).rows;
   const user = (id: string) => ({
     id,
     aud: "authenticated",
@@ -94,13 +111,21 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
       if (url.pathname.endsWith("/logout") || url.pathname.endsWith("/recover"))
         return fulfill({});
       if (url.pathname.endsWith("/user")) return fulfill(user(id || ids.a));
+      if (url.pathname === "/rest/v1/courses") return fulfill(courseRows);
+      if (url.pathname === "/rest/v1/units")
+        return fulfill(
+          chapterRows.filter(
+            (c) => "eq." + c.course_id === url.searchParams.get("course_id"),
+          ),
+        );
       if (url.pathname === "/rest/v1/lessons")
         return fulfill(
-          lessons.map((l, i) => ({
-            content_json: l,
-            sort_order: i,
-            units: { sort_order: 0, courses: { sort_order: 0 } },
-          })),
+          curriculumRows.filter(
+            (l) =>
+              "eq." + l.course_id === url.searchParams.get("units.course_id") &&
+              (!url.searchParams.has("unit_id") ||
+                "eq." + l.unit_id === url.searchParams.get("unit_id")),
+          ),
         );
       if (url.pathname.includes("/rpc/")) {
         const execute = async () => {
@@ -168,7 +193,16 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
       page.getByRole("heading", { name: "Chào An, cùng học thôi!" }),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "Bắt đầu bài học tiếp theo" })
+      .getByRole("button", { name: "Hành trình", exact: true })
+      .first()
+      .click();
+    await page.locator(".sample-library summary").click();
+    await page
+      .locator(".sample-library")
+      .getByRole("button", { name: /你好! Xin chào/ })
+      .click();
+    await page
+      .getByRole("button", { name: "Bắt đầu học", exact: true })
       .click();
     await page.getByRole("button", { name: "Mình đã hiểu, thử nào" }).click();
     await page.getByRole("button", { name: /^\d+ 你好$/ }).click();
@@ -208,6 +242,73 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
       .click();
     await page.getByRole("button", { name: "Lưu kết quả & tiếp tục" }).click();
     await expect(page.locator(".sync-banner")).toContainText("Đã đồng bộ");
+    await page
+      .getByRole("button", { name: "Tổng quan", exact: true })
+      .first()
+      .click();
+    await page
+      .getByRole("button", { name: "Bắt đầu bài học tiếp theo" })
+      .click();
+    // Reload between two teaching screens, rather than only between questions.
+    for (const s of beginner.lessons[0].screens.slice(0, 3)) {
+      await expect(
+        page.getByRole("heading", { name: s.title, exact: true }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
+    }
+    await expect
+      .poll(async () => {
+        await locked;
+        const result = await db.query<any>(
+          "select state_json from public.stage_progress where lesson_id='intro-one-two-v1'",
+        );
+        return result.rows[0]?.state_json.screenIndex;
+      })
+      .toBe(3);
+    await page.reload();
+    await page.getByRole("button", { name: "Tiếp tục màn đang học" }).click();
+    for (const s of beginner.lessons[0].screens.slice(3)) {
+      const dialog = page.getByRole("dialog");
+      await expect(
+        dialog.getByRole("heading", {
+          name: s.kind === "exercise" ? s.question.prompt : s.title,
+          exact: true,
+        }),
+      ).toBeVisible();
+      if (s.kind === "exercise") {
+        if (s.question.type === "match") {
+          for (const pair of s.question.options) {
+            const [left, right] = pair.split("|");
+            await dialog
+              .getByRole("button", { name: left, exact: true })
+              .click();
+            await dialog
+              .getByRole("button", { name: right, exact: true })
+              .click();
+          }
+        } else
+          await dialog
+            .locator(".answers button")
+            .filter({ hasText: s.question.answer })
+            .click();
+        await dialog
+          .getByRole("button", { name: "Kiểm tra", exact: true })
+          .click();
+      } else if (s.kind === "notebook")
+        for (const checkbox of await dialog.getByRole("checkbox").all())
+          await checkbox.check();
+      await dialog
+        .getByRole("button", { name: "Tiếp tục", exact: true })
+        .click();
+    }
+    await page.getByRole("button", { name: "Lưu kết quả & tiếp tục" }).click();
+    await expect
+      .poll(async () => {
+        await locked;
+        return (await db.query("select * from public.study_sessions")).rows
+          .length;
+      })
+      .toBe(2);
     await page
       .getByRole("button", { name: "Sổ tay", exact: true })
       .first()
@@ -279,7 +380,7 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
     const rows = await db.query<{ xp_earned: number }>(
       "select xp_earned from public.study_sessions",
     );
-    expect(rows.rows).toHaveLength(1);
+    expect(rows.rows).toHaveLength(2);
     expect(rows.rows[0].xp_earned).toBe(40);
     const resetCtx = await setup(390),
       reset = await resetCtx.newPage();

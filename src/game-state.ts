@@ -1,16 +1,21 @@
 import { z } from "zod";
+import { learningSchema } from "./learning/schema";
 import type { Lesson, Question } from "./data";
 const question = z.object({
+  contentId: z.string().optional(),
   type: z.enum(["quiz", "listen", "sentence", "match", "tone"]),
   prompt: z.string(),
   options: z.array(z.string()),
   answer: z.string(),
   explanation: z.string(),
   audio: z.string().optional(),
+  hint: z.string().optional(),
 });
 export const gameSnapshotSchema = z.object({
   sessionId: z.uuid(),
   lesson: z.object({
+    learning: learningSchema.optional(),
+    prerequisites: z.array(z.string()).optional(),
     id: z.string(),
     title: z.string(),
     description: z.string(),
@@ -22,6 +27,7 @@ export const gameSnapshotSchema = z.object({
     writing: z.string(),
     minutes: z.number(),
   }),
+  screenIndex: z.number().int().nonnegative().default(0),
   practice: z.boolean(),
   step: z.number().int().min(-1),
   score: z.number().int().nonnegative(),
@@ -47,7 +53,8 @@ export function newGame(
     sessionId: crypto.randomUUID(),
     lesson,
     practice,
-    step: -1,
+    step: lesson.learning ? 0 : -1,
+    screenIndex: 0,
     score: 0,
     startedAt: Date.now(),
     questions,

@@ -1,3 +1,4 @@
+import { TeachingScreen } from "./learning/TeachingScreen";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -166,6 +167,7 @@ export default function Game({
   onClose,
   onComplete,
   practice = false,
+  previewMode = false,
   resume,
   onState,
 }: {
@@ -179,6 +181,7 @@ export default function Game({
     state: GameSnapshot,
   ) => void | boolean;
   practice?: boolean;
+  previewMode?: boolean;
   resume?: GameSnapshot;
   onState?: (state: GameSnapshot) => void;
 }) {
@@ -192,6 +195,9 @@ export default function Game({
       ),
   );
   const [step, setStep] = useState(base.step);
+  const [screenIndex, setScreenIndex] = useState(base.screenIndex);
+  const screen = lesson.learning?.screens[screenIndex];
+  const teaching = !!screen && screen.kind !== "exercise";
   const [selection, setSelection] = useState(base.selection);
   const [tokens, setTokens] = useState<number[]>(base.tokens);
   const [feedback, setFeedback] = useState<boolean | null>(base.feedback);
@@ -212,6 +218,7 @@ export default function Game({
   const snapshot: GameSnapshot = {
     ...base,
     step,
+    screenIndex,
     selection,
     tokens,
     feedback,
@@ -226,6 +233,7 @@ export default function Game({
     onStateRef.current?.({
       ...base,
       step,
+      screenIndex,
       selection,
       tokens,
       feedback,
@@ -236,10 +244,12 @@ export default function Game({
       responses,
       questions,
     });
-  }, [step, feedback, score, results, wrote, responses]);
+  }, [step, screenIndex, feedback, score, results, wrote, responses]);
   const q = questions[step];
-  const writing = step === lesson.questions.length;
-  const finished = step > lesson.questions.length;
+  const writing = !lesson.learning && step === lesson.questions.length;
+  const finished = lesson.learning
+    ? screenIndex >= lesson.learning.screens.length
+    : step > lesson.questions.length;
   function check() {
     if (!selection) return;
     const correct = selection === q.answer && !assisted;
@@ -257,7 +267,11 @@ export default function Game({
     ]);
   }
   function next() {
-    setStep((x) => x + 1);
+    if (lesson.learning) {
+      setScreenIndex((x) => x + 1);
+      if (screen?.kind === "exercise") setStep((x) => x + 1);
+      setWrote(false);
+    } else setStep((x) => x + 1);
     setSelection("");
     setTokens([]);
     setFeedback(null);
@@ -266,7 +280,7 @@ export default function Game({
   }
   useEffect(() => {
     finishRef.current?.focus();
-  }, [step, feedback]);
+  }, [step, screenIndex, feedback]);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -293,7 +307,7 @@ export default function Game({
           <div className="progress">
             <i
               style={{
-                width: `${(Math.max(0, step + 1) / (lesson.questions.length + 2)) * 100}%`,
+                width: `${lesson.learning ? (screenIndex / lesson.learning.screens.length) * 100 : (Math.max(0, step + 1) / (lesson.questions.length + 2)) * 100}%`,
               }}
             />
           </div>
@@ -302,7 +316,20 @@ export default function Game({
           </span>
         </header>
         <div className="game-body">
-          {step === -1 ? (
+          {previewMode && (
+            <p className="note-box">
+              XEM TRƯỚC · Không lưu tiến độ, XP hoặc lịch ôn.
+            </p>
+          )}
+          {teaching ? (
+            <TeachingScreen
+              key={screen.id}
+              screen={screen}
+              sound={sound}
+              wrote={wrote}
+              onWrote={setWrote}
+            />
+          ) : step === -1 ? (
             <>
               <span className="eyebrow">
                 {practice ? "KHU LUYỆN TẬP" : "KHÁM PHÁ BÀI MỚI"} ·{" "}
@@ -344,7 +371,7 @@ export default function Game({
               <p>
                 {practice
                   ? "Kết quả ôn tập sẽ cập nhật lịch nhắc lại của bạn."
-                  : "Đạt từ 70% để mở chặng tiếp theo."}{" "}
+                  : "Đạt từ 70% để hoàn thành và đáp ứng điều kiện cho các bài tiếp theo."}{" "}
                 Từ đúng được tăng khoảng cách ôn; từ sai ôn sau 10 phút.
               </p>
             </div>
@@ -383,6 +410,21 @@ export default function Game({
                         : "TỪ VỰNG"}
               </span>
               <h2 id="game-title">{q.prompt}</h2>
+              {screen?.image && (
+                <img
+                  className="lesson-image"
+                  src={screen.image.url}
+                  alt={screen.image.alt}
+                />
+              )}
+              {screen?.audioUrl && (
+                <audio
+                  controls
+                  src={screen.audioUrl}
+                  preload="none"
+                  aria-label="Audio bài tập"
+                />
+              )}
               {q.type === "listen" && (
                 <>
                   <button
@@ -391,13 +433,28 @@ export default function Game({
                   >
                     <Volume2 size={30} /> Nghe phát âm
                   </button>
-                  <details key={step}>
+                  <details
+                    key={step}
+                    onToggle={(e) => {
+                      if (e.currentTarget.open) setAssisted(true);
+                    }}
+                  >
                     <summary>Không nghe được? Xem gợi ý Pinyin</summary>
                     {lesson.words.find((w) => w.hanzi === q.audio)?.pinyin ||
                       q.audio}
                   </details>
                   <p role="status">{audioError}</p>
                 </>
+              )}
+              {q.hint && feedback === null && (
+                <details
+                  onToggle={(e) => {
+                    if (e.currentTarget.open) setAssisted(true);
+                  }}
+                >
+                  <summary>Xem gợi ý (lượt này không tính nhớ đúng)</summary>
+                  {q.hint}
+                </details>
               )}
               {q.type === "match" ? (
                 <Match
@@ -470,6 +527,7 @@ export default function Game({
                   <b>{feedback ? "✓ Chính xác!" : "Cùng ghi nhớ lại nhé"}</b>
                   <p>
                     {q.explanation}
+                    {!feedback && q.hint ? ` ${q.hint}` : ""}
                     {assisted &&
                       " Lượt này có cặp ghép sai; hãy ôn lại để ghép đúng ngay lần đầu."}
                   </p>
@@ -496,6 +554,15 @@ export default function Game({
               }}
             >
               Lưu kết quả & tiếp tục <Check size={18} />
+            </button>
+          ) : teaching ? (
+            <button
+              ref={finishRef}
+              className="primary"
+              disabled={screen.kind === "notebook" && !wrote}
+              onClick={next}
+            >
+              Tiếp tục <ArrowRight size={18} />
             </button>
           ) : step === -1 ? (
             <button ref={finishRef} className="primary" onClick={next}>

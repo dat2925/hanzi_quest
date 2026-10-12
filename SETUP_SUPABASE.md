@@ -150,3 +150,26 @@ Trên Supabase thật cần tự kiểm tra: đăng ký A/B và xác nhận emai
 Cài đặt có nút xuất JSON tài khoản và hàng đợi, không chứa token. Đây là backup cá nhân, chưa có giao diện import backup account tự động. Quản trị nên xuất database định kỳ bằng Supabase CLI/`pg_dump` theo tài liệu backup hiện tại; giữ dump ngoài Git, có mã hóa và kiểm tra restore trên project thử trước. Chỉ restore vào database đã sao lưu và đúng phiên bản migration; không restore đè production chưa kiểm tra. Bản SQL schema/seed trong Git không chứa dữ liệu người dùng.
 
 Tài liệu chính thức: [Auth password](https://supabase.com/docs/guides/auth/passwords), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Database functions](https://supabase.com/docs/guides/database/functions), [API keys](https://supabase.com/docs/guides/api/api-keys).
+
+# Nâng cấp giáo trình tương tác — 12/10/2026
+
+Nếu production đã chạy migrations 001–003, **chỉ chạy hai file mới theo thứ tự** trong Supabase → SQL Editor:
+
+1. `supabase/migrations/202610120004_learning_structure.sql`: thêm metadata giáo trình, bảng prerequisite và cập nhật RPC mở khóa. Giữ nguyên bảng người dùng, bài mẫu và tiến độ; chuyển quan hệ thứ tự bài mẫu thành prerequisite để giữ cách mở khóa cũ.
+2. `supabase/migrations/202610120005_beginner_demo.sql`: thêm khóa nhập môn, tám chương khung, một bài 一/二 và câu hỏi tin cậy cho RPC/SRS. Không xóa hoặc ghi đè 10 bài mẫu.
+
+Lưu bản sao database theo quy trình hiện tại trước khi chạy. Mỗi file dùng transaction. Không chạy lại 001–003 hoặc seed 005 nếu đã có bài `intro-one-two-v1`; seed sẽ chủ động từ chối ID trùng. Nếu SQL Editor báo transaction aborted, chạy `rollback;` rồi kiểm tra nguyên nhân.
+
+Kiểm tra sau migration:
+
+```sql
+select id,title,syllabus_version,curriculum_family,is_published from public.courses;
+select count(*) as sample_lessons from public.lessons l join public.units u on u.id=l.unit_id where u.course_id='sample'; -- 10
+select id,is_published from public.lessons where id='intro-one-two-v1'; -- 1 bài published
+select count(*) from public.profiles; -- đối chiếu số người dùng trước nâng cấp
+select user_id,count(*) from public.lesson_progress group by user_id; -- đối chiếu bản sao trước nâng cấp
+```
+
+Tải lại website, vào Hành trình → Tiếng Trung từ số 0 → Nhập môn. Dùng tài khoản kiểm thử hoàn thành demo, tải lại và kiểm tra tiến độ/SRS. Kho bài mẫu nằm riêng. Khi chưa chạy migration, app vẫn dùng kho cũ và hiển thị thông báo cần nhập giáo trình mới.
+
+Không cần biến môi trường mới. Git push kích hoạt Render nếu đã bật auto-deploy; Render **không tự chạy SQL Supabase**. Quy trình biên soạn, xem trước, draft/published và thêm bài tại [CURRICULUM.md](CURRICULUM.md).

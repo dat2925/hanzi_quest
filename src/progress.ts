@@ -91,7 +91,8 @@ export function complete(
   now = Date.now(),
 ): Progress {
   const first = !p.completed.includes(id);
-  const xp = first ? Math.round(20 + accuracy * 20) : 10;
+  const xp =
+    id === "practice" ? 10 : first ? Math.round(20 + accuracy * 20) : 10;
   const reviews = { ...p.reviews };
   const assessed = new Map<string, boolean>();
   for (const a of answers)
@@ -140,5 +141,21 @@ export function available(p: Progress, index: number, ids: string[]) {
     index === 0 ||
     p.completed.includes(ids[index - 1]) ||
     p.completed.includes(ids[index])
+  );
+}
+
+// Legacy samples keep their own sequence; foundation lessons use explicit prerequisites.
+export function canStudy(
+  p: Progress,
+  lesson: import("./data").Lesson,
+  catalog: import("./data").Lesson[],
+) {
+  if (p.completed.includes(lesson.id)) return true;
+  const required = lesson.prerequisites ?? lesson.learning?.prerequisites;
+  if (required) return required.every((id) => p.completed.includes(id));
+  const samples = catalog.filter((l) => !l.learning);
+  const index = samples.findIndex((l) => l.id === lesson.id);
+  return (
+    index === 0 || (index > 0 && p.completed.includes(samples[index - 1].id))
   );
 }

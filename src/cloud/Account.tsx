@@ -399,7 +399,10 @@ function SignedAccount({
   }, [manager]);
   useEffect(() => {
     let active = true;
-    void loadCurriculum()
+    void loadCurriculum("beginner-v1", "beginner-intro")
+      .then(async (content) =>
+        content.length ? content : loadCurriculum("sample"),
+      )
       .then((lessons) => {
         if (!active) return;
         try {

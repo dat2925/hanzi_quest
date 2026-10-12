@@ -1,13 +1,18 @@
+import type { Learning } from "./learning/schema";
 export type Word = { hanzi: string; pinyin: string; meaning: string };
 export type Question = {
+  contentId?: string;
   type: "quiz" | "listen" | "sentence" | "match" | "tone";
   prompt: string;
   options: string[];
   answer: string;
   explanation: string;
+  hint?: string;
   audio?: string;
 };
 export type Lesson = {
+  learning?: Learning;
+  prerequisites?: string[];
   id: string;
   title: string;
   description: string;

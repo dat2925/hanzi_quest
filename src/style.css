@@ -3620,3 +3620,65 @@ summary {
     right: -8px;
   }
 }
+
+.curriculum-browser {
+  margin-bottom: 24px;
+}
+.curriculum-browser select {
+  display: block;
+  max-width: 100%;
+  padding: 12px;
+  margin: 8px 0 20px;
+}
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.chapter-grid button {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+  text-align: left;
+  align-items: flex-start;
+}
+.chapter-grid small {
+  font-size: 12px;
+  font-weight: 400;
+}
+.lesson-steps li {
+  margin: 12px 0;
+  line-height: 1.7;
+}
+.lesson-image {
+  max-width: 100%;
+  height: auto;
+}
+.lesson-example {
+  padding: 12px;
+  border-left: 3px solid #447857;
+}
+.game-body audio {
+  max-width: 100%;
+}
+
+.sample-library {
+  margin: 20px 0;
+}
+.sample-library button {
+  display: block;
+  margin: 8px 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+.curriculum-preview {
+  margin-top: 20px;
+}
+.curriculum-preview input {
+  max-width: 100%;
+}
+.curriculum-preview button {
+  margin: 8px;
+  white-space: normal;
+}

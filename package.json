@@ -11,7 +11,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "mcp": "tsx server/index.ts",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "curriculum": "tsx scripts/import-curriculum.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "^2.3.1",

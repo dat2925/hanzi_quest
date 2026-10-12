@@ -26,7 +26,7 @@ Chế độ phát triển có hot reload: `npm run dev`, mở http://127.0.0.1:5
 
 - Thiết lập tên, kinh nghiệm, mục tiêu, số phút và giờ học; chỉnh lại bất cứ lúc nào.
 - Dashboard bắt đầu từ số liệu 0; XP, thời gian, streak và lịch sử sinh từ phiên học thực tế.
-- Bản đồ 10 chặng, xem trước bài khóa, mở chặng khi đạt 70%, thành thạo sau hai lần đạt 90%.
+- Giáo trình từ số 0 gồm một bài demo 17 màn và tám chương khung. Kho 10 bài mẫu riêng giữ nguyên tiến độ; bài mới mở theo prerequisite.
 - Bài học gồm hướng dẫn, phát âm, chọn đáp án, nghe, ghép cặp, xếp câu, ghi chép và kết quả.
 - 9 chế độ luyện tập: nghe, Pinyin, thanh điệu, nhận diện, ghép cặp, flashcard, xếp câu, viết, ôn lỗi sai.
 - SRS: từ đúng ôn sau 1, 2, 4, 8… ngày, tối đa 30 ngày; từ sai sau 10 phút. Trong một phiên, một từ sai được ưu tiên ôn sớm dù những câu khác đúng.
@@ -35,6 +35,8 @@ Chế độ phát triển có hot reload: `npm run dev`, mở http://127.0.0.1:5
 - Tiến độ LocalStorage có xác thực Zod; xuất bản sao JSON trong Cài đặt. Tài khoản Supabase dùng PostgreSQL làm nguồn chính, queue offline và checkpoint; dữ liệu local cũ chỉ chuyển sau khi xem trước/xác nhận.
 
 ## Kiến trúc
+
+Giáo trình tương tác: xem [CURRICULUM.md](CURRICULUM.md) để biên soạn JSON, validate Zod, xem trước và xuất SQL draft/published. Production cần chạy migrations mới 004 rồi 005 theo [SETUP_SUPABASE.md](SETUP_SUPABASE.md). Chưa tự sinh giáo trình HSK đầy đủ.
 
 | File              | Trách nhiệm                                              |
 | ----------------- | -------------------------------------------------------- |
