@@ -1,4 +1,5 @@
 import { TeachingScreen } from "./learning/TeachingScreen";
+import { RecallCards } from "./learning/RecallCards";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -17,6 +18,7 @@ export function speak(
   text: string,
   enabled = true,
   onError?: (message: string) => void,
+  rate = 0.75,
 ) {
   if (!enabled) {
     onError?.("Âm thanh đang tắt. Bật lại trong Cài đặt.");
@@ -27,7 +29,9 @@ export function speak(
     return;
   }
   const voices = window.speechSynthesis.getVoices();
-  const chinese = voices.find((v) => v.lang.startsWith("zh"));
+  const chinese = voices.find((v) =>
+    /^(zh[-_](CN|SG|Hans)|cmn)([-_]|$)/i.test(v.lang),
+  );
   if (!chinese) {
     onError?.(
       "Thiết bị chưa có giọng tiếng Trung. Hãy cài giọng zh-CN hoặc đọc theo Pinyin.",
@@ -38,7 +42,7 @@ export function speak(
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "zh-CN";
   u.voice = chinese;
-  u.rate = 0.75;
+  u.rate = rate;
   u.onerror = () => onError?.("Không phát được âm thanh. Hãy đọc theo Pinyin.");
   window.speechSynthesis.speak(u);
 }
@@ -197,7 +201,11 @@ export default function Game({
   const [step, setStep] = useState(base.step);
   const [screenIndex, setScreenIndex] = useState(base.screenIndex);
   const screen = lesson.learning?.screens[screenIndex];
-  const teaching = !!screen && screen.kind !== "exercise";
+  const teaching =
+    !!screen && screen.kind !== "exercise" && screen.kind !== "assessment";
+  const [recallRatings, setRecallRatings] = useState(base.recallRatings);
+  const [recovering, setRecovering] = useState(false);
+  const [recovered, setRecovered] = useState(false);
   const [selection, setSelection] = useState(base.selection);
   const [tokens, setTokens] = useState<number[]>(base.tokens);
   const [feedback, setFeedback] = useState<boolean | null>(base.feedback);
@@ -228,6 +236,7 @@ export default function Game({
     assisted,
     responses,
     questions,
+    recallRatings,
   };
   useEffect(() => {
     onStateRef.current?.({
@@ -243,8 +252,18 @@ export default function Game({
       assisted,
       responses,
       questions,
+      recallRatings,
     });
-  }, [step, screenIndex, feedback, score, results, wrote, responses]);
+  }, [
+    step,
+    screenIndex,
+    feedback,
+    score,
+    results,
+    wrote,
+    responses,
+    recallRatings,
+  ]);
   const q = questions[step];
   const writing = !lesson.learning && step === lesson.questions.length;
   const finished = lesson.learning
@@ -268,8 +287,13 @@ export default function Game({
   }
   function next() {
     if (lesson.learning) {
-      setScreenIndex((x) => x + 1);
-      if (screen?.kind === "exercise") setStep((x) => x + 1);
+      const moreItems =
+        screen?.kind === "assessment" &&
+        step + 1 < questions.length &&
+        questions[step + 1].contentId?.startsWith(`${lesson.id}:${screen.id}-`);
+      if (!moreItems) setScreenIndex((x) => x + 1);
+      if (screen?.kind === "exercise" || screen?.kind === "assessment")
+        setStep((x) => x + 1);
       setWrote(false);
     } else setStep((x) => x + 1);
     setSelection("");
@@ -322,13 +346,77 @@ export default function Game({
             </p>
           )}
           {teaching ? (
-            <TeachingScreen
-              key={screen.id}
-              screen={screen}
-              sound={sound}
-              wrote={wrote}
-              onWrote={setWrote}
-            />
+            <>
+              <TeachingScreen
+                key={screen.id}
+                screen={screen}
+                sound={sound}
+                wrote={wrote}
+                onWrote={setWrote}
+                ratings={recallRatings}
+                onRate={(id, hanzi, correct) =>
+                  setRecallRatings((r) => ({ ...r, [id]: { hanzi, correct } }))
+                }
+              />
+              {screen.kind === "srs" &&
+                responses.some(
+                  (r, i) => r.assisted || r.selection !== questions[i].answer,
+                ) && (
+                  <div className="note-box">
+                    <h3>Những chỗ cần ôn lại</h3>
+                    {!recovering &&
+                      questions
+                        .filter(
+                          (q, i) =>
+                            responses[i]?.assisted ||
+                            responses[i]?.selection !== q.answer,
+                        )
+                        .map((q) => (
+                          <p key={q.contentId || q.prompt}>
+                            {q.prompt}
+                            <br />
+                            {q.explanation}
+                          </p>
+                        ))}
+                    {!recovering && (
+                      <button
+                        className="secondary"
+                        onClick={() => {
+                          setRecovering(true);
+                          setRecovered(false);
+                        }}
+                      >
+                        Tự nhớ lại trước khi kết thúc
+                      </button>
+                    )}
+                    {score / questions.length < 0.7 && !recovered && (
+                      <p>
+                        Hãy thử tự nhớ lại các từ trước khi kết thúc. Điểm kiểm
+                        tra được giữ nguyên.
+                      </p>
+                    )}
+                    {recovering &&
+                      lesson.learning?.screens
+                        .filter((s) => s.kind === "recall")
+                        .map((s) => (
+                          <RecallCards
+                            key={s.id}
+                            cards={s.cards}
+                            sound={sound}
+                            onDone={() => {
+                              setRecovered(true);
+                            }}
+                            onRate={(id, hanzi, correct) =>
+                              setRecallRatings((r) => ({
+                                ...r,
+                                [id]: { hanzi, correct },
+                              }))
+                            }
+                          />
+                        ))}
+                  </div>
+                )}
+            </>
           ) : step === -1 ? (
             <>
               <span className="eyebrow">
@@ -397,6 +485,12 @@ export default function Game({
             </>
           ) : (
             <>
+              {screen?.kind === "assessment" && (
+                <>
+                  <h3>{screen.title}</h3>
+                  <p>{screen.body}</p>
+                </>
+              )}
               <span className="eyebrow">
                 THỬ THÁCH {step + 1}/{lesson.questions.length} ·{" "}
                 {q.type === "listen"
@@ -448,6 +542,7 @@ export default function Game({
               )}
               {q.hint && feedback === null && (
                 <details
+                  key={`hint-${step}`}
                   onToggle={(e) => {
                     if (e.currentTarget.open) setAssisted(true);
                   }}
@@ -529,7 +624,7 @@ export default function Game({
                     {q.explanation}
                     {!feedback && q.hint ? ` ${q.hint}` : ""}
                     {assisted &&
-                      " Lượt này có cặp ghép sai; hãy ôn lại để ghép đúng ngay lần đầu."}
+                      " Lượt này đã dùng gợi ý hoặc thử ghép sai; hãy ôn lại để tự nhớ ngay lần đầu."}
                   </p>
                 </div>
               )}
@@ -559,7 +654,14 @@ export default function Game({
             <button
               ref={finishRef}
               className="primary"
-              disabled={screen.kind === "notebook" && !wrote}
+              disabled={
+                ((screen.kind === "notebook" || screen.kind === "recall") &&
+                  !wrote) ||
+                (screen.kind === "srs" &&
+                  score / questions.length < 0.7 &&
+                  lesson.learning?.screens.some((s) => s.kind === "recall") &&
+                  !recovered)
+              }
               onClick={next}
             >
               Tiếp tục <ArrowRight size={18} />

@@ -42,6 +42,9 @@ export const gameSnapshotSchema = z.object({
   selection: z.string().default(""),
   tokens: z.array(z.number().int()).default([]),
   assisted: z.boolean().default(false),
+  recallRatings: z
+    .record(z.string(), z.object({ hanzi: z.string(), correct: z.boolean() }))
+    .default({}),
 });
 export type GameSnapshot = z.infer<typeof gameSnapshotSchema>;
 export function newGame(
@@ -65,5 +68,6 @@ export function newGame(
     selection: "",
     tokens: [],
     assisted: false,
+    recallRatings: {},
   };
 }

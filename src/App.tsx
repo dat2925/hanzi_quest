@@ -1,5 +1,6 @@
 import { demo } from "./learning/demo";
 import { CourseBrowser } from "./learning/CourseBrowser";
+import { RecallCards } from "./learning/RecallCards";
 import { useEffect, useState } from "react";
 import {
   Home,
@@ -123,6 +124,7 @@ export default function App() {
   const [flipped, setFlipped] = useState(false);
   const [flashMode, setFlashMode] = useState(false);
   const [writeMode, setWriteMode] = useState(false);
+  const [recallLesson, setRecallLesson] = useState<Lesson | null>(null);
   const [now, setNow] = useState(Date.now());
   function patch(next: Partial<Progress>) {
     try {
@@ -384,8 +386,25 @@ export default function App() {
   ) {
     if (!game) return;
     try {
-      manager?.enqueue([finishOperation(state, seconds)]);
       const result = complete(p, game.id, a, seconds, answers);
+      // Self-assessment uses the existing no-XP review operation, separately from
+      // server-verified test answers. Multiple directions share a word schedule;
+      // any forgotten direction schedules that word earlier.
+      const recall = new globalThis.Map<string, boolean>();
+      const allowed = new Set(game.words.map((w) => w.hanzi));
+      for (const rating of Object.values(state.recallRatings))
+        if (allowed.has(rating.hanzi))
+          recall.set(
+            rating.hanzi,
+            (recall.get(rating.hanzi) ?? true) && rating.correct,
+          );
+      const reviewOps = [];
+      for (const [hanzi, correct] of recall) {
+        if (correct && answers.some((a) => a.hanzi === hanzi)) continue;
+        reviewOps.push(operation("review", { hanzi, correct }));
+        result.reviews[hanzi] = schedule(result.reviews[hanzi], correct);
+      }
+      manager?.enqueue([finishOperation(state, seconds), ...reviewOps]);
       result.written = [...new Set([...p.written, dateKey()])];
       if (practice || a < 0.7) result.completed = p.completed;
       setP(result);
@@ -1015,6 +1034,62 @@ export default function App() {
                 title="Sân chơi tiếng Trung"
                 text="Chọn một kỹ năng. Dành vài phút. Tốt hơn một chút mỗi ngày."
               />
+              <section className="card">
+                <h2>Tự nhớ bài đã học · không cộng XP</h2>
+                <p>
+                  Các hướng tự nhớ dùng chung lịch ôn của từng từ. Từ đến hạn sẽ
+                  được đánh dấu để bạn ôn trước.
+                </p>
+                {lessons
+                  .filter(
+                    (l) =>
+                      l.learning?.screens.some((s) => s.kind === "recall") &&
+                      l.words.some((w) => p.reviews[w.hanzi]),
+                  )
+                  .map((l) => (
+                    <button
+                      key={l.id}
+                      className="secondary"
+                      onClick={() => setRecallLesson(l)}
+                    >
+                      {l.title}
+                      {l.words.some((w) => p.reviews[w.hanzi]?.due <= now)
+                        ? " · Đến hạn"
+                        : " · Ôn thêm"}
+                    </button>
+                  ))}
+                {recallLesson && (
+                  <>
+                    <button
+                      className="text-button"
+                      onClick={() => setRecallLesson(null)}
+                    >
+                      Đóng tự nhớ
+                    </button>
+                    <RecallCards
+                      key={recallLesson.id}
+                      cards={recallLesson.learning!.screens.flatMap((s) =>
+                        s.kind === "recall" ? s.cards : [],
+                      )}
+                      sound={p.sound}
+                      onDone={() =>
+                        setMessage("Đã ôn đủ các hướng tự nhớ, không cộng XP.")
+                      }
+                      onRate={(_id, hanzi, correct) =>
+                        patch({
+                          reviews: {
+                            ...p.reviews,
+                            [hanzi]: schedule(p.reviews[hanzi], correct),
+                          },
+                          difficult: correct
+                            ? p.difficult
+                            : [...new Set([...p.difficult, hanzi])],
+                        })
+                      }
+                    />
+                  </>
+                )}
+              </section>
               {flashMode && learned.length ? (
                 <section className="card flash-section">
                   <SectionTitle

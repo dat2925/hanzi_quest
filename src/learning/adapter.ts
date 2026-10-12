@@ -1,5 +1,6 @@
 import type { Lesson } from "../data";
 import type { Learning } from "./schema";
+import { expandScreens } from "./schema";
 import { assessedWords } from "../engine";
 export function adaptLesson(l: Learning): Lesson {
   return {
@@ -15,7 +16,7 @@ export function adaptLesson(l: Learning): Lesson {
           .map((w) => [w.hanzi, w]),
       ).values(),
     ],
-    questions: l.screens.flatMap((s) =>
+    questions: expandScreens(l.screens).flatMap((s) =>
       s.kind === "exercise"
         ? [{ ...s.question, contentId: `${l.id}:${s.id}` }]
         : [],

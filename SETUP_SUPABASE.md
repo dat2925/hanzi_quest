@@ -153,6 +153,8 @@ Tài liệu chính thức: [Auth password](https://supabase.com/docs/guides/auth
 
 # Nâng cấp giáo trình tương tác — 12/10/2026
 
+**Bài 1A Quyển 1 (13/10/2026):** xem [BOOK1_REVIEW.md](BOOK1_REVIEW.md) trước. Có nút xem thử không cần SQL. Migration mới `202610130001_book1_lesson1a_draft.sql` chỉ nhập draft; file `supabase/manual/book1_lesson1a_publish_after_review.sql` chỉ chạy khi đã duyệt. Không chạy lại các migration cũ đã thành công.
+
 Nếu production đã chạy migrations 001–003, **chỉ chạy hai file mới theo thứ tự** trong Supabase → SQL Editor:
 
 1. `supabase/migrations/202610120004_learning_structure.sql`: thêm metadata giáo trình, bảng prerequisite và cập nhật RPC mở khóa. Giữ nguyên bảng người dùng, bài mẫu và tiến độ; chuyển quan hệ thứ tự bài mẫu thành prerequisite để giữ cách mở khóa cũ.

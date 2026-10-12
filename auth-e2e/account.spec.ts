@@ -2,6 +2,7 @@ import { test, expect, type BrowserContext } from "@playwright/test";
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { beginner } from "../src/learning/demo";
+import { lesson1a } from "../src/learning/book1";
 const ids = {
   a: "20000000-0000-4000-8000-000000000001",
   b: "20000000-0000-4000-8000-000000000002",
@@ -9,6 +10,7 @@ const ids = {
 test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline note, isolation, reset", async ({
   browser,
 }) => {
+  test.setTimeout(120000);
   const db = new PGlite();
   const contexts: BrowserContext[] = [];
   let locked = Promise.resolve();
@@ -21,6 +23,7 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
     "202610120003_legacy_approval.sql",
     "202610120004_learning_structure.sql",
     "202610120005_beginner_demo.sql",
+    "202610130001_book1_lesson1a_draft.sql",
   ])
     await db.exec(
       readFileSync(
@@ -28,6 +31,12 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
         "utf8",
       ),
     );
+  await db.exec(
+    readFileSync(
+      "supabase/manual/book1_lesson1a_publish_after_review.sql",
+      "utf8",
+    ),
+  );
   const curriculumRows = (
     await db.query<any>(
       `select l.id,l.unit_id,l.content_json,l.sort_order,u.course_id,jsonb_build_object('sort_order',u.sort_order,'courses',jsonb_build_object('sort_order',c.sort_order)) units from public.lessons l join public.units u on u.id=l.unit_id join public.courses c on c.id=u.course_id where l.is_published`,
@@ -309,6 +318,109 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
           .length;
       })
       .toBe(2);
+    // The published 1A uses actual RLS/RPC scoring and separate no-XP recall.
+    await page
+      .getByRole("button", { name: "Hành trình", exact: true })
+      .first()
+      .click();
+    await page.getByRole("combobox").selectOption("hanzione-book1-preview");
+    await page.getByRole("button", { name: /^Bài 1 · Chào hỏi/ }).click();
+    await page
+      .getByRole("button", {
+        name: /Quyển 1 · Bài 1A: 你好 – Xin chào — Có thể học/,
+      })
+      .click();
+    await page
+      .getByRole("button", { name: "Bắt đầu học", exact: true })
+      .click();
+    for (let i = 0; i < 3; i++)
+      await page
+        .getByRole("dialog")
+        .getByRole("button", { name: "Tiếp tục", exact: true })
+        .click();
+    await page
+      .getByRole("button", { name: "Mình đã thử nhớ · Xem đáp án" })
+      .click();
+    await page.getByRole("button", { name: "Chưa nhớ", exact: true }).click();
+    await expect
+      .poll(async () => {
+        await locked;
+        const row = (
+          await db.query<any>(
+            "select state_json from public.stage_progress where lesson_id='hanzione-b1-l01a'",
+          )
+        ).rows[0];
+        return row?.state_json.recallRatings["greeting-meaning"]?.correct;
+      })
+      .toBe(false);
+    await page.reload();
+    await page.getByRole("button", { name: "Tiếp tục màn đang học" }).click();
+    await expect(
+      page.getByRole("region", { name: "Thẻ tự nhớ" }),
+    ).toContainText("Thẻ 2/5");
+    for (let i = 1; i < 5; i++) {
+      await page
+        .getByRole("button", { name: "Mình đã thử nhớ · Xem đáp án" })
+        .click();
+      await page.getByRole("button", { name: "Nhớ được", exact: true }).click();
+    }
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Tiếp tục", exact: true })
+      .click();
+    for (const c of await page.getByRole("dialog").getByRole("checkbox").all())
+      await c.check();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Tiếp tục", exact: true })
+      .click();
+    for (const q of lesson1a.questions) {
+      const d = page.getByRole("dialog");
+      if (q.type === "match")
+        for (const pair of q.options) {
+          const [a, b] = pair.split("|");
+          await d.getByRole("button", { name: a, exact: true }).click();
+          await d.getByRole("button", { name: b, exact: true }).click();
+        }
+      else if (q.type === "sentence")
+        for (const w of ["你", "好"])
+          await d
+            .locator(".token-bank")
+            .getByRole("button", { name: w, exact: true })
+            .click();
+      else
+        await d
+          .getByRole("button", { name: new RegExp(`^\\d+ ${q.answer}$`) })
+          .click();
+      await d.getByRole("button", { name: "Kiểm tra", exact: true }).click();
+      await d.getByRole("button", { name: "Tiếp tục", exact: true }).click();
+    }
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Tiếp tục", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toContainText("Đúng 5/5");
+    await page.getByRole("button", { name: "Lưu kết quả & tiếp tục" }).click();
+    await expect(page.locator(".sync-banner")).toContainText("Đã đồng bộ");
+    await expect
+      .poll(async () => {
+        await locked;
+        return Number(
+          (
+            await db.query<any>(
+              "select interval_days from public.review_items where content_id='你好'",
+            )
+          ).rows[0]?.interval_days,
+        );
+      })
+      .toBe(0);
+    expect(
+      (
+        await db.query<any>(
+          "select xp_earned from public.study_sessions where lesson_id='hanzione-b1-l01a'",
+        )
+      ).rows[0].xp_earned,
+    ).toBe(40);
     await page
       .getByRole("button", { name: "Sổ tay", exact: true })
       .first()
@@ -380,7 +492,7 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
     const rows = await db.query<{ xp_earned: number }>(
       "select xp_earned from public.study_sessions",
     );
-    expect(rows.rows).toHaveLength(2);
+    expect(rows.rows).toHaveLength(3);
     expect(rows.rows[0].xp_earned).toBe(40);
     const resetCtx = await setup(390),
       reset = await resetCtx.newPage();

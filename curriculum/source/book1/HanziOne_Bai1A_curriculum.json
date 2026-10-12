@@ -1,0 +1,88 @@
+{
+  "courseId": "hanzione-book1-preview",
+  "version": "preview-v1",
+  "title": "HanziOne – Quyển 1 (bài mẫu 1A, CHƯA XUẤT BẢN)",
+  "lessons": [
+    {
+      "id": "hanzione-b1-l01a",
+      "title": "Quyển 1 · Bài 1A: 你好 – Xin chào",
+      "description": "Học hai chữ 你、好; biết chào và tự nhớ lại mà không nhìn đáp án. Dựa trên chủ đề Bài 1, Giáo trình Hán ngữ Tập 1 Quyển 1 (PDF trang 16–27); bài giảng và bài tập do HanziOne tự biên soạn.",
+      "guide": "Mục tiêu: nhận diện, đọc và tự nhớ 你好. 你 (nǐ) là “bạn”, 好 (hǎo) là “tốt”; ghép thành 你好 (nǐ hǎo) nghĩa là “xin chào”. Cả nǐ và hǎo đều viết thanh 3. Khi nói liền nhau, tiếng đầu thường được phát âm gần thanh 2: ní hǎo. Học theo thứ tự: nhìn mẫu và đọc → che mẫu tự nhớ → viết vào vở → luyện tập. Nếu quên, xem lại rồi thử một lần nữa; không cần biết các từ ngoài bài.",
+      "words": [
+        {
+          "hanzi": "你",
+          "pinyin": "nǐ",
+          "meaning": "Bạn (đại từ xưng hô)"
+        },
+        {
+          "hanzi": "好",
+          "pinyin": "hǎo",
+          "meaning": "Tốt"
+        },
+        {
+          "hanzi": "你好",
+          "pinyin": "nǐ hǎo",
+          "meaning": "Xin chào"
+        }
+      ],
+      "questions": [
+        {
+          "type": "quiz",
+          "prompt": "你好 nghĩa là gì?",
+          "options": [
+            "Xin chào",
+            "Tạm biệt",
+            "Cảm ơn"
+          ],
+          "answer": "Xin chào",
+          "explanation": "你好 (nǐ hǎo) là lời chào thông dụng."
+        },
+        {
+          "type": "quiz",
+          "prompt": "Chữ 你 nghĩa là gì?",
+          "options": [
+            "Bạn",
+            "Tốt",
+            "Sách"
+          ],
+          "answer": "Bạn",
+          "explanation": "你 (nǐ) = bạn. Chữ 好 (hǎo) = tốt."
+        },
+        {
+          "type": "quiz",
+          "prompt": "Chọn Pinyin đúng của 你好.",
+          "options": [
+            "nǐ hǎo",
+            "nǐ hào",
+            "nī hāo"
+          ],
+          "answer": "nǐ hǎo",
+          "explanation": "Cách viết Pinyin: nǐ hǎo, đều có dấu thanh 3. Khi nói liền hai thanh 3, tiếng thứ nhất thường đọc gần thanh 2."
+        },
+        {
+          "type": "sentence",
+          "prompt": "Sắp xếp hai chữ để tạo lời chào “Xin chào”.",
+          "options": [
+            "好",
+            "你"
+          ],
+          "answer": "你好",
+          "explanation": "Đặt 你 trước 好 để được 你好."
+        },
+        {
+          "type": "match",
+          "prompt": "Ghép chữ/từ đã học với nghĩa.",
+          "options": [
+            "你|Bạn",
+            "好|Tốt",
+            "你好|Xin chào"
+          ],
+          "answer": "matched",
+          "explanation": "你 = bạn; 好 = tốt; 你好 = xin chào."
+        }
+      ],
+      "writing": "Nhìn mẫu 你 và 好, quan sát cấu tạo (你 gồm 亻 và 尔; 好 gồm 女 và 子). Viết mỗi chữ 3 lần, sau đó viết 你好 2 lần. Che mẫu, nhìn nghĩa “xin chào” và thử viết lại 你好 1 lần bằng trí nhớ. Tự so sánh và khoanh chỗ sai; chưa chấm thứ tự nét tự động.",
+      "minutes": 12
+    }
+  ]
+}

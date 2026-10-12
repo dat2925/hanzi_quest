@@ -72,6 +72,7 @@ const common = {
   id,
   title: text,
   body: text,
+  theory: text.optional(),
   introduces: z.array(id).default([]),
   image: z.object({ url, alt: text }).optional(),
   audioUrl: url.optional(),
@@ -81,6 +82,36 @@ const common = {
   steps: z.array(text).default([]),
 };
 export const screenSchema = z.discriminatedUnion("kind", [
+  z.object({
+    ...common,
+    kind: z.literal("recall"),
+    cards: z
+      .array(
+        z.object({
+          id,
+          prompt: text,
+          answer: text,
+          answerType: z.enum(["meaning", "hanzi", "pinyin"]).default("meaning"),
+          hint: text,
+          hanzi: text,
+          knowledge: z.array(id).min(1),
+        }),
+      )
+      .min(1),
+  }),
+  z.object({
+    ...common,
+    kind: z.literal("assessment"),
+    items: z
+      .array(
+        z.object({
+          id,
+          phase: z.enum(["practice", "application", "final"]),
+          question: questionSchema,
+        }),
+      )
+      .min(1),
+  }),
   z.object({
     ...common,
     kind: z.enum([
@@ -119,7 +150,7 @@ export const learningSchema = z.object({
   difficulty: z.number().int().min(1).max(10),
   status: z.enum(["draft", "published"]),
   prerequisites: z.array(id),
-  screens: z.array(screenSchema).min(9),
+  screens: z.array(screenSchema).min(7),
 });
 export const bundleSchema = z.object({
   schemaVersion: z.literal(2),
@@ -138,6 +169,20 @@ export const bundleSchema = z.object({
 export type Learning = z.infer<typeof learningSchema>;
 export type Screen = z.infer<typeof screenSchema>;
 export type Bundle = z.infer<typeof bundleSchema>;
+// A grouped assessment remains one teaching stage; each item has a stable bank ID.
+export function expandScreens(screens: Screen[]): Screen[] {
+  return screens.flatMap((s): Screen[] =>
+    s.kind === "assessment"
+      ? s.items.map((item) => ({
+          ...s,
+          kind: "exercise" as const,
+          id: `${s.id}-${item.id}`,
+          phase: item.phase,
+          question: item.question,
+        }))
+      : [s],
+  );
+}
 export function validateBundle(value: unknown): Bundle {
   const b = bundleSchema.parse(value);
   const errors: string[] = [];
@@ -172,9 +217,10 @@ export function validateBundle(value: unknown): Bundle {
     });
   };
   for (const l of [...b.lessons, ...b.references]) {
+    const screens = expandScreens(l.screens);
     if (l.screens[0].kind !== "objective")
       errors.push(`${l.id}: màn đầu cần là mục tiêu`);
-    if (l.screens.filter((s) => s.kind === "exercise").length > 100)
+    if (screens.filter((s) => s.kind === "exercise").length > 100)
       errors.push(`${l.id}: tối đa 100 câu hỏi, hãy chia thành bài nhỏ`);
     if (new TextEncoder().encode(JSON.stringify(l)).length > 100000)
       errors.push(`${l.id}: nội dung quá lớn, hãy chia thành bài nhỏ`);
@@ -182,9 +228,28 @@ export function validateBundle(value: unknown): Bundle {
       errors.push(`${l.id}: chương không tồn tại`);
     unique(
       l.screens.map((s) => s.id),
+      l.id + ".stages",
+    );
+    unique(
+      screens.map((s) => s.id),
       l.id + ".screens",
     );
+    unique(
+      l.screens.flatMap((s) =>
+        s.kind === "recall" ? s.cards.map((c) => c.id) : [],
+      ),
+      l.id + ".recallCards",
+    );
     const parents = ancestors(l);
+    const knownWords = new Map(
+      parents.flatMap((p) =>
+        p.screens.flatMap((s) =>
+          s.kind === "vocabulary"
+            ? s.words.map((w) => [w.hanzi, w] as const)
+            : [],
+        ),
+      ),
+    );
     const taughtPinyin = (screens: Screen[]) =>
       screens
         .flatMap((s) => [
@@ -206,7 +271,38 @@ export function validateBundle(value: unknown): Bundle {
       ),
     );
     let finals = 0;
-    for (const s of l.screens) {
+    for (const s of screens) {
+      if (s.kind === "recall") {
+        unique(
+          s.cards.map((c) => c.id),
+          s.id + ".cards",
+        );
+        for (const c of s.cards) {
+          const word = knownWords.get(c.hanzi);
+          const expected =
+            word &&
+            (c.answerType === "hanzi"
+              ? word.hanzi
+              : c.answerType === "pinyin"
+                ? word.pinyin
+                : word.meaning);
+          if (!word || c.answer !== expected)
+            errors.push(`${s.id}: đáp án tự nhớ không khớp từ đã dạy`);
+          if (c.knowledge.some((k) => !known.has(k)))
+            errors.push(`${s.id}: tự nhớ kiến thức chưa dạy`);
+          for (const ch of (c.prompt + c.answer + c.hanzi).match(
+            /\p{Script=Han}/gu,
+          ) || [])
+            if (!chars.has(ch))
+              errors.push(`${s.id}: chữ chưa giới thiệu ${ch}`);
+          if (
+            c.answerType === "pinyin" &&
+            (!pinyin.safeParse(c.answer).success ||
+              !knownPinyin.has(c.answer.toLowerCase()))
+          )
+            errors.push(`${s.id}: Pinyin tự nhớ chưa dạy`);
+        }
+      }
       if (s.kind === "exercise") {
         if (s.introduces.length)
           errors.push(
@@ -236,6 +332,7 @@ export function validateBundle(value: unknown): Bundle {
         s.introduces.forEach((k) => known.add(k));
         if (s.kind === "vocabulary")
           for (const w of s.words) {
+            knownWords.set(w.hanzi, w);
             if (
               w.tones.length !== w.pinyin.split(/[\s’'-]+/).length ||
               w.tones.length !== [...w.hanzi].length
@@ -259,11 +356,15 @@ export function validateBundle(value: unknown): Bundle {
       "notebook",
       "srs",
     ])
-      if (!l.screens.some((s) => s.kind === kind))
+      if (
+        !screens.some(
+          (s) => s.kind === kind || (kind === "explanation" && !!s.theory),
+        )
+      )
         errors.push(`${l.id}: thiếu màn ${kind}`);
     if (
       !finals ||
-      !l.screens.some((s) => s.kind === "exercise" && s.phase === "application")
+      !screens.some((s) => s.kind === "exercise" && s.phase === "application")
     )
       errors.push(`${l.id}: thiếu luyện ứng dụng hoặc kiểm tra cuối bài`);
     if (l.screens.at(-1)?.kind !== "srs")

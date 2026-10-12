@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { RecallCards } from "./RecallCards";
 import type { Screen } from "./schema";
 import { speak, WritingPad } from "../Game";
 export function TeachingScreen({
@@ -6,14 +7,23 @@ export function TeachingScreen({
   sound,
   wrote,
   onWrote,
+  ratings = {},
+  onRate = () => {},
 }: {
   screen: Screen;
   sound: boolean;
   wrote: boolean;
   onWrote: (value: boolean) => void;
+  ratings?: Record<string, { hanzi: string; correct: boolean }>;
+  onRate?: (id: string, hanzi: string, correct: boolean) => void;
 }) {
   const [error, setError] = useState("");
   const [checked, setChecked] = useState<string[]>([]);
+  const [showPinyin, setShowPinyin] = useState(true);
+  const [showModel, setShowModel] = useState(true);
+  useEffect(() => {
+    if (s.kind === "recall") onWrote(s.cards.every((c) => !!ratings[c.id]));
+  }, [s, ratings, onWrote]);
   return (
     <>
       <span className="eyebrow">
@@ -25,6 +35,20 @@ export function TeachingScreen({
       </span>
       <h2 id="game-title">{s.title}</h2>
       <p className="game-guide">{s.body}</p>
+      {s.theory && <p className="note-box">{s.theory}</p>}
+      {(s.kind === "vocabulary" || s.kind === "pronunciation") && (
+        <button
+          className="text-button"
+          onClick={() => setShowPinyin(!showPinyin)}
+        >
+          {showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
+        </button>
+      )}
+      {s.kind === "notebook" && (
+        <button className="secondary" onClick={() => setShowModel(!showModel)}>
+          {showModel ? "Che mẫu để tự viết" : "Hiện mẫu để đối chiếu"}
+        </button>
+      )}
       {s.image && (
         <img
           className="lesson-image"
@@ -43,39 +67,69 @@ export function TeachingScreen({
           ))}
         </ol>
       )}
-      {s.examples.map((x, i) => (
-        <p className="lesson-example" key={i}>
-          <strong lang="zh">{x.hanzi}</strong> · {x.pinyin}
-          <br />
-          {x.meaning}
-        </p>
-      ))}
+      {(s.kind !== "notebook" || showModel) &&
+        s.examples.map((x, i) => (
+          <p className="lesson-example" key={i}>
+            <strong lang="zh">{x.hanzi}</strong>{" "}
+            {showPinyin && <>· {x.pinyin}</>}
+            <br />
+            {x.meaning}
+          </p>
+        ))}
       {s.kind === "vocabulary" && (
         <div className="word-tiles">
           {s.words.map((w) => (
-            <button
-              key={w.hanzi}
-              onClick={() => speak(w.hanzi, sound, setError)}
-            >
-              <b lang="zh">{w.hanzi}</b>
-              <span>
-                {w.pinyin} · thanh {w.tones.join(", ")}
-              </span>
-              <small>{w.meaning}</small>
-              <small>
-                {w.example.hanzi} · {w.example.pinyin} · {w.example.meaning}
-              </small>
-            </button>
+            <div key={w.hanzi}>
+              <button onClick={() => speak(w.hanzi, sound, setError)}>
+                <b lang="zh">{w.hanzi}</b>
+                {showPinyin && (
+                  <span>
+                    {w.pinyin} · thanh {w.tones.join(", ")}
+                  </span>
+                )}
+                <small>{w.meaning}</small>
+                <small>
+                  {w.example.hanzi} {showPinyin && <>· {w.example.pinyin}</>} ·{" "}
+                  {w.example.meaning}
+                </small>
+              </button>
+              <button
+                className="text-button"
+                onClick={() => speak(w.hanzi, sound, setError, 0.5)}
+              >
+                Nghe chậm {w.hanzi}
+              </button>
+            </div>
           ))}
         </div>
       )}
       {"speech" in s && s.speech && (
-        <button
-          className="listen-button"
-          onClick={() => speak(s.speech!, sound, setError)}
-        >
-          Nghe phát âm
-        </button>
+        <>
+          <button
+            className="listen-button"
+            onClick={() => speak(s.speech!, sound, setError)}
+          >
+            Nghe phát âm
+          </button>
+          <button
+            className="text-button"
+            onClick={() => speak(s.speech!, sound, setError, 0.5)}
+          >
+            Nghe chậm
+          </button>
+          <p className="muted">
+            Tự nghe và đọc theo. Ứng dụng chưa chấm phát âm.
+          </p>
+        </>
+      )}
+      {s.kind === "recall" && (
+        <RecallCards
+          cards={s.cards}
+          sound={sound}
+          ratings={ratings}
+          onRate={onRate}
+          onDone={onWrote}
+        />
       )}
       {s.kind === "notebook" && (
         <>

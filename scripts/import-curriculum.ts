@@ -105,7 +105,7 @@ guard(
   "COURSE_VERSION_CONFLICT",
 );
 sql.push(
-  `insert into public.courses(id,title,syllabus_version,curriculum_family,hsk_level,sort_order,is_published) values(${quote(b.courseId)},${quote(b.title)},${quote(b.syllabus.version)},${quote(b.syllabus.family)},${b.syllabus.level ?? "null"},0,${publish}) on conflict(id) do nothing;`,
+  `insert into public.courses(id,title,syllabus_version,curriculum_family,hsk_level,sort_order,is_published) values(${quote(b.courseId)},${quote(b.title)},${quote(b.syllabus.version)},${quote(b.syllabus.family)},${b.syllabus.level ?? "null"},(select coalesce(max(sort_order),-1)+1 from public.courses),${publish}) on conflict(id) do nothing;`,
 );
 for (const c of b.chapters) {
   guard(

@@ -1,5 +1,7 @@
 # Giáo trình tương tác
 
+Bài 1A Quyển 1 dùng `curriculum/book1-lesson1a.json`: 7 màn, draft, xem thử ngay trong Hành trình. Quy trình duyệt và SQL thủ công tại [BOOK1_REVIEW.md](BOOK1_REVIEW.md).
+
 Nguồn demo: `curriculum/beginner.json`. Chỉ có **một bài mới**, 17 màn, hai từ 一 và 二. Nội dung được viết riêng, không trích giáo trình có bản quyền. Tám chương là khung chờ biên soạn, không phải giáo trình HSK đầy đủ.
 
 ## Mô hình nội dung
@@ -10,6 +12,7 @@ Nguồn demo: `curriculum/beginner.json`. Chỉ có **một bài mới**, 17 mà
 - Bài: `schemaVersion: 2`, ID ổn định, `chapterId`, `title`, `description`, `minutes`, `difficulty: 1..10`, `status: draft|published`, `prerequisites: lessonId[]`, `screens`.
 - Màn: ID duy nhất trong bài, `kind`, `title`, `body` tiếng Việt; tùy chọn `steps`, `examples`, `image: {url,alt}`, `audioUrl`. Media dùng HTTPS; ví dụ có `hanzi`, `pinyin`, `meaning`.
 - Loại màn: `objective`, `explanation`, `vocabulary`, `pronunciation`, `exercise`, `notebook`, `review`, `srs`. Màn phát âm có `speech` để dùng giọng thiết bị. Màn viết có `checklist` tự đối chiếu. Các màn có thể lặp lại để giảng từng phần nhỏ, xen bài tập ngay sau lý thuyết.
+- Bài từ 7 màn trở lên. `theory` có thể đặt cùng màn mục tiêu để giảng lý thuyết. `recall.cards` gồm ID, prompt, answer, answerType (meaning/hanzi/pinyin), hint, hanzi, knowledge; đáp án phải khớp từ đã dạy. `assessment.items` gom nhiều bài tập trong một màn, mỗi item có ID, phase và question; từng câu vẫn có khóa riêng cho RPC chấm điểm. Tự đánh giá không cấp XP.
 - Từ mới có `hanzi`, `pinyin`, `meaning`, `tones` (0 là thanh nhẹ, 1..4 là bốn thanh), `example`. Tách âm tiết Pinyin bằng khoảng trắng; dùng dấu thanh khớp `tones` và số chữ.
 - Màn giảng khai báo `introduces: knowledgeId[]`; câu hỏi khai báo `knowledge`. Kiến thức phải được giới thiệu ở màn trước hoặc trong prerequisite. Câu hỏi không tự giới thiệu kiến thức. Chữ Hán trong câu hỏi, lựa chọn và audio phải được giới thiệu qua từ vựng.
 - Bài tập có `phase: practice|application|final`. Câu hỏi cần `type`, `prompt`, `options`, `answer`, `explanation`, `hint`, `knowledge`; câu nghe cần `audio` là văn bản tiếng Trung. Các type: `quiz`, `listen`, `sentence`, `match`, `tone`. Ghép cặp dùng `chữ|nghĩa`, đáp án `matched`; xếp câu có đáp án là chuỗi token.

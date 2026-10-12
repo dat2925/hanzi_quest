@@ -1745,7 +1745,8 @@ main {
   gap: 12px;
   margin: 25px 0;
 }
-.word-tiles > button {
+.word-tiles > button,
+.word-tiles > div > button:first-child {
   border: 1px solid var(--line);
   border-radius: 13px;
   flex: 1;
@@ -1763,6 +1764,14 @@ main {
   font-size: 35px;
   font-weight: 500;
 }
+.word-tiles > div { flex: 1; min-width: 120px; }
+.word-tiles > div > button:first-child { width: 100%; }
+.word-tiles > div small { font-size: 13px; line-height: 1.55; color: var(--text); }
+.word-tiles > div span { font-size: 15px; color: var(--green); }
+.word-tiles > div > .text-button { font-size: 13px; margin-top: 8px; }
+.recall-card { padding: 20px; border: 1px solid var(--line); border-radius: 16px; margin: 16px 0; }
+.recall-card .row { flex-wrap: wrap; gap: 12px; }
+.recall-card h3 { overflow-wrap: anywhere; line-height: 1.6; }
 .word-tiles span {
   font-size: 13px;
   color: #80976b;
@@ -2027,6 +2036,7 @@ summary {
 [data-theme="dark"] .path-map,
 [data-theme="dark"] .token-bank,
 [data-theme="dark"] .word-tiles > button,
+[data-theme="dark"] .word-tiles > div > button:first-child,
 [data-theme="dark"] .flashcard {
   background: #34422d;
   border-color: #435239;

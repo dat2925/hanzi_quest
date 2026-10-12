@@ -4,6 +4,7 @@ import { compileBundle } from "./adapter";
 import type { Lesson } from "../data";
 import { useEffect, useState } from "react";
 import { beginner } from "./demo";
+import { lesson1a } from "./book1";
 import {
   loadCourseIndex,
   loadChapterIndex,
@@ -68,6 +69,16 @@ export function CourseBrowser({
   return (
     <section className="card curriculum-browser">
       <h2>Giáo trình cho người mới</h2>
+      <div className="note-box">
+        <h3>Quyển 1 · Bài 1A đang chờ duyệt</h3>
+        <p>
+          Bảy màn học: hiểu lời chào, từ mới, nghe nói, tự nhớ, viết vào vở,
+          kiểm tra và ôn tập. Bản xem trước không lưu dữ liệu.
+        </p>
+        <button className="secondary" onClick={() => setPreview(lesson1a)}>
+          Xem thử Bài 1A · 你好 – Xin chào
+        </button>
+      </div>
       <p>
         Chọn khóa và phiên bản giáo trình. Các chương chưa có bài được để trống
         để chờ nội dung đã duyệt.
