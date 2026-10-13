@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { book1, lesson1a } from "../src/learning/book1";
 import { lesson1b } from "../src/learning/book1b";
+import { lesson1c } from "../src/learning/book1c";
 import { initial } from "../src/progress";
 
 async function setup(
@@ -8,6 +9,7 @@ async function setup(
   mode: "published" | "draft" | "error" | "loading",
   include1b = false,
   completed1a = false,
+  oneC?: { published: boolean; completed1b: boolean },
 ) {
   const id = "40000000-0000-4000-8000-000000000001";
   const user = {
@@ -58,7 +60,11 @@ async function setup(
         progress: {
           ...initial,
           onboarded: true,
-          completed: completed1a ? [lesson1a.id] : [],
+          completed: oneC?.completed1b
+            ? [lesson1a.id, lesson1b.id]
+            : completed1a
+              ? [lesson1a.id]
+              : [],
         },
         stages: [],
         legacyPending: false,
@@ -110,6 +116,16 @@ async function setup(
             sort_order: 1,
             units: { sort_order: 0, courses: { sort_order: 1 } },
           });
+        if (oneC?.published && mode !== "draft")
+          (body as any[]).push({
+            id: lesson1c.id,
+            content_json: {
+              ...lesson1c,
+              learning: { ...lesson1c.learning!, status: "published" },
+            },
+            sort_order: 2,
+            units: { sort_order: 0, courses: { sort_order: 1 } },
+          });
         const idFilter = url.searchParams.get("id");
         if (idFilter)
           body = (body as any[]).filter((row) => "eq." + row.id === idFilter);
@@ -125,6 +141,130 @@ async function setup(
     .click();
   return { operations, release };
 }
+
+for (const completed1b of [false, true])
+  test(`published 1C opens real content only after 1B, completed1b=${completed1b}`, async ({
+    page,
+  }) => {
+    const { operations } = await setup(page, "published", true, true, {
+      published: true,
+      completed1b,
+    });
+    const card = page.getByRole("region", { name: "Bài 1C", exact: true });
+    await expect(card).toContainText("Đã xuất bản");
+    await expect(card.getByRole("button", { name: /Xem thử/ })).toHaveCount(0);
+    if (!completed1b) {
+      await expect(card).toContainText("Hoàn thành Bài 1B");
+      await expect(
+        card.getByRole("button", { name: "Học ngay" }),
+      ).toBeDisabled();
+    } else {
+      await card.getByRole("button", { name: "Học ngay" }).click();
+      await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
+      await expect(page.getByRole("dialog")).toContainText(
+        "1/7 · Một âm, nhiều thanh điệu",
+      );
+      await expect
+        .poll(() =>
+          operations.some(
+            (op) => op.kind === "stage" && op.payload.lesson.id === lesson1c.id,
+          ),
+        )
+        .toBe(true);
+      await page.getByRole("button", { name: "Đóng bài học" }).click();
+    }
+    await page.getByRole("combobox").selectOption(book1.courseId);
+    await page.getByRole("button", { name: /^Bài 1 · Chào hỏi/ }).click();
+    const article = page
+      .getByRole("region", { name: "Danh sách bài trong chương" })
+      .getByRole("article")
+      .filter({ hasText: lesson1c.title });
+    await expect(article).toBeVisible();
+    await expect(article.getByRole("button")).toHaveText(
+      completed1b ? "Học ngay" : "Xem điều kiện mở khóa",
+    );
+    if (completed1b) {
+      await article.getByRole("button").click();
+      await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
+      await expect(page.getByRole("dialog")).toContainText(
+        "1/7 · Một âm, nhiều thanh điệu",
+      );
+    }
+  });
+
+test("1C draft has safe preview while published 1A and 1B remain real lessons", async ({
+  page,
+}) => {
+  const { operations } = await setup(page, "published", true, true, {
+    published: false,
+    completed1b: true,
+  });
+  for (const [label, id] of [
+    ["Bài 1A", lesson1a.id],
+    ["Bài 1B", lesson1b.id],
+  ]) {
+    const old = page.getByRole("region", { name: label, exact: true });
+    await old.getByRole("button", { name: "Học ngay" }).click();
+    await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
+    await expect
+      .poll(() =>
+        operations.some(
+          (op) => op.kind === "stage" && op.payload.lesson.id === id,
+        ),
+      )
+      .toBe(true);
+    await page.getByRole("button", { name: "Đóng bài học" }).click();
+  }
+  const count = operations.filter((op) =>
+    ["stage", "finish", "review"].includes(op.kind),
+  ).length;
+  const card = page.getByRole("region", { name: "Bài 1C", exact: true });
+  await expect(card).toContainText("Chưa có bản xuất bản Bài 1C");
+  await card.getByRole("button", { name: /Xem thử/ }).click();
+  await expect(page.getByRole("dialog")).toContainText("XEM TRƯỚC");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Tiếp tục", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Đóng bài học" }).click();
+  expect(
+    operations.filter((op) => ["stage", "finish", "review"].includes(op.kind)),
+  ).toHaveLength(count);
+});
+
+test("1C pending/error statuses and retry do not mistake failures for draft", async ({
+  page,
+}) => {
+  const { release } = await setup(page, "loading", true, true, {
+    published: true,
+    completed1b: true,
+  });
+  const card = page.getByRole("region", { name: "Bài 1C", exact: true });
+  await expect(card).toContainText("Đang kiểm tra");
+  await expect(card.getByRole("button")).toHaveCount(0);
+  release();
+  await expect(card).toContainText("Đã xuất bản");
+  let fail = true;
+  await page.route(
+    "https://hanzi-qa.supabase.co/rest/v1/lessons?**",
+    (route) => {
+      const url = new URL(route.request().url());
+      return fail && url.searchParams.get("id") === "eq." + lesson1c.id
+        ? route.fulfill({ status: 500, json: { message: "1C QA failure" } })
+        : route.fallback();
+    },
+  );
+  await page
+    .getByRole("button", { name: "Tải lại trạng thái giáo trình" })
+    .click();
+  await expect(card).toContainText("Chưa xác định được");
+  await expect(
+    card.getByRole("button", { name: /Xem thử|Học ngay/ }),
+  ).toHaveCount(0);
+  fail = false;
+  await card.getByRole("button", { name: "Thử tải lại Bài 1C" }).click();
+  await expect(card.getByRole("button", { name: "Học ngay" })).toBeEnabled();
+});
 
 for (const completed1a of [false, true])
   test(`published 1B prerequisite and course/chapter navigation, completed1a=${completed1a}`, async ({

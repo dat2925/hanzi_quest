@@ -122,6 +122,8 @@ export const screenSchema = z.discriminatedUnion("kind", [
       "srs",
     ]),
     speech: text.optional(),
+    // Optional controls for individual illustrative sounds, separate from learned vocabulary.
+    listenToExamples: z.boolean().optional(),
   }),
   z.object({
     ...common,

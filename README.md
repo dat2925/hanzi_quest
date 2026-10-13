@@ -40,6 +40,8 @@ Giáo trình tương tác: xem [CURRICULUM.md](CURRICULUM.md) để biên soạn
 
 Bài 1B có bản xem thử 7 màn trong Hành trình, chỉ thêm hai từ 八 và 马. Xem [BOOK1B_REVIEW.md](BOOK1B_REVIEW.md) để duyệt nội dung, kiểm thử và chạy riêng SQL draft/publish sau khi đồng ý xuất bản.
 
+Bài 1C có bản xem thử 7 màn về bốn thanh điệu, hai từ 妈/爸, sáu thẻ tự nhớ và chín hoạt động kiểm tra. Xem [BOOK1C_REVIEW.md](BOOK1C_REVIEW.md) để duyệt trước khi chạy SQL draft/publish riêng; bài thật yêu cầu hoàn thành 1B.
+
 | File              | Trách nhiệm                                              |
 | ----------------- | -------------------------------------------------------- |
 | `src/App.tsx`     | Các trang, điều hướng, thiết lập, quản lý trạng thái     |

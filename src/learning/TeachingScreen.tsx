@@ -69,12 +69,28 @@ export function TeachingScreen({
       )}
       {(s.kind !== "notebook" || showModel) &&
         s.examples.map((x, i) => (
-          <p className="lesson-example" key={i}>
+          <div className="lesson-example" key={i}>
             <strong lang="zh">{x.hanzi}</strong>{" "}
             {showPinyin && <>· {x.pinyin}</>}
             <br />
             {x.meaning}
-          </p>
+            {s.kind === "pronunciation" && s.listenToExamples && (
+              <div className="row">
+                <button
+                  className="text-button"
+                  onClick={() => speak(x.hanzi, sound, setError)}
+                >
+                  Nghe ví dụ {i + 1}
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => speak(x.hanzi, sound, setError, 0.5)}
+                >
+                  Nghe chậm ví dụ {i + 1}
+                </button>
+              </div>
+            )}
+          </div>
         ))}
       {s.kind === "vocabulary" && (
         <div className="word-tiles">

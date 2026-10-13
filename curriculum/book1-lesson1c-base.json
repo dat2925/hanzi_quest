@@ -1,0 +1,449 @@
+{
+  "schemaVersion": 2,
+  "courseId": "hanzione-book1-preview",
+  "title": "HanziOne · Quyển 1",
+  "syllabus": {
+    "family": "foundation",
+    "version": "book1-preview-v1"
+  },
+  "status": "draft",
+  "chapters": [
+    {
+      "id": "hanzione-b1-ch01",
+      "title": "Bài 1 · Chào hỏi, Pinyin và thanh điệu",
+      "description": "Bài 1A: 你好; Bài 1B: b/p/m/f, a/o, 八, 马; Bài 1C: bốn thanh điệu, 妈, 爸. Các phần sau chờ biên soạn."
+    }
+  ],
+  "lessons": [
+    {
+      "schemaVersion": 2,
+      "id": "hanzione-b1-l01c",
+      "chapterId": "hanzione-b1-ch01",
+      "title": "Quyển 1 · Bài 1C: Bốn thanh điệu tiếng Trung",
+      "description": "Nghe và phân biệt 4 thanh điệu; nhớ hai chữ 妈 (mẹ), 爸 (bố) và ôn 八, 马.",
+      "minutes": 16,
+      "difficulty": 1,
+      "status": "draft",
+      "prerequisites": [
+        "hanzione-b1-l01b"
+      ],
+      "screens": [
+        {
+          "id": "welcome",
+          "kind": "objective",
+          "title": "1/7 · Một âm, nhiều thanh điệu",
+          "body": "Bạn đã biết 八 (bā), 马 (mǎ) và cách ghép Pinyin. Hôm nay ta học cách dấu thanh thay đổi độ cao giọng nói. Chỉ có hai từ mới cần nhớ: 妈 – mẹ và 爸 – bố. Chuẩn bị vở và bút; học nghe trước rồi mới kiểm tra.",
+          "theory": "Tiếng Quan thoại có bốn thanh điệu chính. Dấu thanh viết trên nguyên âm trong Pinyin: ngang (thanh 1), sắc (thanh 2), móc/hình chữ v (thanh 3), huyền (thanh 4). Đường cao độ là hình dung đơn giản, không phải yêu cầu giọng ai cũng có cùng độ cao tuyệt đối. Dấu Pinyin là một phần của cách đọc: thay dấu có thể đổi nghĩa.",
+          "steps": [
+            "Nhận biết hình dấu và hướng chuyển động giọng nói.",
+            "Nghe mẫu, học hai từ mới và nhớ từ vựng cũ.",
+            "Che đáp án để tự nhớ, luyện viết và kiểm tra trước khi ôn SRS."
+          ],
+          "introduces": [
+            "tone-four-overview",
+            "tone-mark-role"
+          ]
+        },
+        {
+          "id": "tone-listen",
+          "kind": "pronunciation",
+          "title": "2/7 · Nghe bốn thanh điệu",
+          "body": "Cùng phần âm m + a, thay dấu thanh sẽ làm đường giọng khác nhau. Thanh 1: giọng cao, tương đối ngang (¯). Thanh 2: giọng đi lên (´). Thanh 3: giọng hạ thấp; khi đọc riêng có thể hạ rồi nhấc lên (ˇ), khi nói liền thường chỉ thấp. Thanh 4: từ cao đi xuống thấp rõ và nhanh (`). Dùng tay vẽ đường giọng khi đọc theo. Không ép các thanh giống hệt dấu tiếng Việt.",
+          "theory": "Bốn ví dụ bên dưới chỉ giúp hình dung và nghe đối chiếu. Chữ chỉ mẹ và bố sẽ được học ở màn tiếp theo; hai chữ ví dụ cho thanh 2 và 4 chưa cần thuộc chữ hoặc nghĩa và không vào lịch ôn. Bấm nghe riêng từng ví dụ rồi dừng để đọc theo. Âm máy Mandarin phụ thuộc giọng trên thiết bị, chưa phải bản thu đã kiểm chứng để chấm phân biệt thanh điệu. Ứng dụng chưa chấm phát âm.",
+          "examples": [
+            {
+              "hanzi": "妈",
+              "pinyin": "mā",
+              "meaning": "Ví dụ thanh 1 · cao và ngang; từ mới sẽ học ở màn 3."
+            },
+            {
+              "hanzi": "麻",
+              "pinyin": "má",
+              "meaning": "Ví dụ thanh 2 · giọng đi lên; chưa cần thuộc chữ hoặc nghĩa."
+            },
+            {
+              "hanzi": "马",
+              "pinyin": "mǎ",
+              "meaning": "Ví dụ thanh 3 · chữ đã học ở Bài 1B."
+            },
+            {
+              "hanzi": "骂",
+              "pinyin": "mà",
+              "meaning": "Ví dụ thanh 4 · giọng đi xuống; chưa cần thuộc chữ hoặc nghĩa."
+            }
+          ],
+          "steps": [
+            "Quan sát dấu và hướng giọng của bốn ví dụ bên dưới.",
+            "Nghe từng ví dụ, dừng rồi đọc theo; dùng Nghe chậm nếu cần. Nếu thiếu giọng Mandarin, ghi lại để luyện với audio chuẩn sau.",
+            "Vẽ tay ngang cho thanh 1, đi lên cho thanh 2, hạ thấp cho thanh 3 và đi xuống cho thanh 4.",
+            "Khi nói liền, thanh 3 thường thấp, không phải lúc nào cũng uốn đủ xuống-rồi-lên."
+          ],
+          "introduces": [
+            "tone-one",
+            "tone-two",
+            "tone-three",
+            "tone-four",
+            "tone-contour"
+          ],
+          "listenToExamples": true
+        },
+        {
+          "id": "words",
+          "kind": "vocabulary",
+          "title": "3/7 · Hai từ mới: mẹ và bố",
+          "body": "Chỉ học hai từ mới: Mẹ và Bố. Mẹ mang thanh 1 (cao ngang); Bố mang thanh 4 (đi xuống). Nghe rồi đọc theo từng từ bên dưới. Hai ví dụ Tám và Ngựa là từ cũ từ Bài 1B, không phải từ mới. Bấm Ẩn Pinyin để thử đọc mà không nhìn phiên âm.",
+          "words": [
+            {
+              "hanzi": "妈",
+              "pinyin": "mā",
+              "meaning": "Mẹ",
+              "tones": [
+                1
+              ],
+              "example": {
+                "hanzi": "妈",
+                "pinyin": "mā",
+                "meaning": "Mẹ · Thanh 1, cao ngang. Gợi ý nhận hình: phần nữ bên trái, phần bên phải gợi âm."
+              }
+            },
+            {
+              "hanzi": "爸",
+              "pinyin": "bà",
+              "meaning": "Bố",
+              "tones": [
+                4
+              ],
+              "example": {
+                "hanzi": "爸",
+                "pinyin": "bà",
+                "meaning": "Bố · Thanh 4, đi xuống. Gợi ý nhận hình: phần cha ở trên."
+              }
+            }
+          ],
+          "steps": [
+            "Chạm từng từ mới để nghe, đọc theo 2–3 lần.",
+            "Chú ý dấu ngang ở từ Mẹ và dấu đi xuống ở từ Bố.",
+            "Ẩn Pinyin, tự đọc lại hai từ mới.",
+            "Tự nhớ cách đọc hai chữ cũ bên dưới trước khi xem phiên âm."
+          ],
+          "introduces": [
+            "word-mom",
+            "word-dad"
+          ],
+          "examples": [
+            {
+              "hanzi": "八",
+              "pinyin": "bā",
+              "meaning": "Tám · Từ cũ từ Bài 1B, thanh 1."
+            },
+            {
+              "hanzi": "马",
+              "pinyin": "mǎ",
+              "meaning": "Ngựa · Từ cũ từ Bài 1B, thanh 3."
+            }
+          ]
+        },
+        {
+          "id": "recall",
+          "kind": "recall",
+          "title": "4/7 · Tự nhớ trước khi lật thẻ",
+          "body": "Hãy tự trả lời bằng miệng hoặc viết vào vở rồi mới bấm lật thẻ. Đánh giá đúng mức nhớ được; quên thì sẽ ôn sớm hơn. Không nhìn trước Pinyin để đoán thanh.",
+          "cards": [
+            {
+              "id": "mom-meaning",
+              "prompt": "妈 có nghĩa là gì?",
+              "answer": "Mẹ",
+              "answerType": "meaning",
+              "hint": "Người mẹ trong gia đình.",
+              "hanzi": "妈",
+              "knowledge": [
+                "word-mom"
+              ]
+            },
+            {
+              "id": "dad-meaning",
+              "prompt": "爸 có nghĩa là gì?",
+              "answer": "Bố",
+              "answerType": "meaning",
+              "hint": "Người bố trong gia đình.",
+              "hanzi": "爸",
+              "knowledge": [
+                "word-dad"
+              ]
+            },
+            {
+              "id": "mom-hanzi",
+              "prompt": "Mẹ — viết chữ Hán từ trí nhớ, đừng nhìn mẫu.",
+              "answer": "妈",
+              "answerType": "hanzi",
+              "hint": "Bộ nữ bên trái, phần bên phải gợi âm.",
+              "hanzi": "妈",
+              "knowledge": [
+                "word-mom"
+              ]
+            },
+            {
+              "id": "dad-hanzi",
+              "prompt": "Bố — viết chữ Hán từ trí nhớ, đừng nhìn mẫu.",
+              "answer": "爸",
+              "answerType": "hanzi",
+              "hint": "Phần cha ở trên.",
+              "hanzi": "爸",
+              "knowledge": [
+                "word-dad"
+              ]
+            },
+            {
+              "id": "mom-pinyin",
+              "prompt": "妈 — tự đọc Pinyin kèm dấu thanh, rồi lật thẻ.",
+              "answer": "mā",
+              "answerType": "pinyin",
+              "hint": "Âm m + a, thanh 1 ngang.",
+              "hanzi": "妈",
+              "knowledge": [
+                "word-mom",
+                "tone-one"
+              ]
+            },
+            {
+              "id": "dad-pinyin",
+              "prompt": "爸 — tự đọc Pinyin kèm dấu thanh, rồi lật thẻ.",
+              "answer": "bà",
+              "answerType": "pinyin",
+              "hint": "Âm b + a, thanh 4 đi xuống.",
+              "hanzi": "爸",
+              "knowledge": [
+                "word-dad",
+                "tone-four"
+              ]
+            }
+          ],
+          "introduces": []
+        },
+        {
+          "id": "notebook",
+          "kind": "notebook",
+          "title": "5/7 · Ghi dấu thanh và viết vào vở",
+          "body": "Chuẩn bị vở. Nhìn mẫu hai chữ bên dưới và viết mỗi chữ 2–3 lần. Tập viết bốn dấu trên nguyên âm a. Sau đó Che mẫu và tự viết lại hai từ từ nghĩa Mẹ / Bố cùng bốn dấu thanh từ trí nhớ. Hiện mẫu để đối chiếu. Ô viết chỉ để tự luyện; ứng dụng chưa chấm nét viết hoặc phát âm.",
+          "checklist": [
+            "Đã viết bốn dấu trên nguyên âm a, đánh số từ thanh 1 đến 4 và tự đọc.",
+            "Đã nhìn mẫu, viết mỗi chữ mới 2–3 lần, giữ gọn trong ô vuông.",
+            "Đã che mẫu, tự viết lại chữ Mẹ / Bố và các dấu thanh từ trí nhớ.",
+            "Đã hiện mẫu để đối chiếu, đánh dấu từ chưa nhớ.",
+            "Đã tự nhớ hai từ Tám / Ngựa từ bài trước trước khi xem lại."
+          ],
+          "examples": [
+            {
+              "hanzi": "妈",
+              "pinyin": "mā",
+              "meaning": "Mẹ · Mẫu bốn dấu trên a: ā (1), á (2), ǎ (3), à (4)."
+            },
+            {
+              "hanzi": "爸",
+              "pinyin": "bà",
+              "meaning": "Bố · quan sát phần 父 bên trên; đây không phải bài dạy đầy đủ thứ tự nét."
+            }
+          ],
+          "introduces": []
+        },
+        {
+          "id": "check",
+          "kind": "assessment",
+          "title": "6/7 · Kiểm tra sau khi đã học",
+          "body": "Chín hoạt động đi từ nhận nghĩa và hướng giọng đến nhận dấu, chọn Pinyin và ghép cặp. Tất cả đã được giải thích trước đó. Nếu sai, đọc lại giải thích rồi tự thử nhớ; hai chữ chỉ minh họa âm không có câu hỏi nhớ nghĩa.",
+          "items": [
+            {
+              "id": "mom-meaning",
+              "phase": "practice",
+              "question": {
+                "type": "quiz",
+                "prompt": "妈 có nghĩa là gì?",
+                "options": [
+                  "Mẹ",
+                  "Bố"
+                ],
+                "answer": "Mẹ",
+                "explanation": "妈 (mā) nghĩa là mẹ, mang thanh 1.",
+                "hint": "Hãy nhớ từ mới có thanh 1 và thanh mẫu m.",
+                "knowledge": [
+                  "word-mom"
+                ]
+              }
+            },
+            {
+              "id": "dad-meaning",
+              "phase": "practice",
+              "question": {
+                "type": "quiz",
+                "prompt": "爸 có nghĩa là gì?",
+                "options": [
+                  "Bố",
+                  "Mẹ"
+                ],
+                "answer": "Bố",
+                "explanation": "爸 (bà) nghĩa là bố, mang thanh 4.",
+                "hint": "Từ này phát âm ba với giọng đi xuống.",
+                "knowledge": [
+                  "word-dad"
+                ]
+              }
+            },
+            {
+              "id": "tone-one",
+              "phase": "practice",
+              "question": {
+                "type": "quiz",
+                "prompt": "Thanh 1 có đường giọng cơ bản như thế nào?",
+                "options": [
+                  "Cao và ngang",
+                  "Đi lên",
+                  "Đi xuống nhanh"
+                ],
+                "answer": "Cao và ngang",
+                "explanation": "Thanh 1 thường cao và khá đều, như dấu ngang trong mā.",
+                "hint": "Nhìn dấu ngang trên nguyên âm.",
+                "knowledge": [
+                  "tone-one",
+                  "tone-contour"
+                ]
+              }
+            },
+            {
+              "id": "tone-two",
+              "phase": "application",
+              "question": {
+                "type": "quiz",
+                "prompt": "Thanh 2 có hướng chuyển động giọng như thế nào?",
+                "options": [
+                  "Đi lên",
+                  "Đi xuống nhanh",
+                  "Cao và ngang"
+                ],
+                "answer": "Đi lên",
+                "explanation": "Thanh 2 là đường giọng đi lên; ví dụ má có dấu sắc.",
+                "hint": "Nhớ hướng của dấu sắc.",
+                "knowledge": [
+                  "tone-two",
+                  "tone-contour"
+                ]
+              }
+            },
+            {
+              "id": "tone-three",
+              "phase": "application",
+              "question": {
+                "type": "quiz",
+                "prompt": "Dấu ǎ trong mǎ biểu thị thanh mấy?",
+                "options": [
+                  "Thanh 3",
+                  "Thanh 2",
+                  "Thanh 4",
+                  "Thanh 1"
+                ],
+                "answer": "Thanh 3",
+                "explanation": "ǎ là thanh 3. Khi nói liền, thanh 3 thường được phát âm thấp hơn là uốn hết xuống-rồi-lên.",
+                "hint": "Đây là dấu hình chữ v.",
+                "knowledge": [
+                  "tone-three"
+                ]
+              }
+            },
+            {
+              "id": "tone-four",
+              "phase": "application",
+              "question": {
+                "type": "quiz",
+                "prompt": "Dấu à trong mà biểu thị thanh mấy?",
+                "options": [
+                  "Thanh 4",
+                  "Thanh 1",
+                  "Thanh 2",
+                  "Thanh 3"
+                ],
+                "answer": "Thanh 4",
+                "explanation": "à là dấu thanh 4; giọng đi từ cao xuống thấp nhanh, rõ.",
+                "hint": "Nhìn dấu huyền.",
+                "knowledge": [
+                  "tone-four"
+                ]
+              }
+            },
+            {
+              "id": "mom-pinyin",
+              "phase": "final",
+              "question": {
+                "type": "quiz",
+                "prompt": "Pinyin chính xác của 妈 là gì?",
+                "options": [
+                  "mā",
+                  "mǎ"
+                ],
+                "answer": "mā",
+                "explanation": "妈 là mā (mẹ, thanh 1). 马 đã học ở 1B đọc mǎ (ngựa, thanh 3).",
+                "hint": "Từ chỉ mẹ mang thanh 1.",
+                "knowledge": [
+                  "word-mom",
+                  "tone-one",
+                  "tone-three"
+                ]
+              }
+            },
+            {
+              "id": "dad-pinyin",
+              "phase": "final",
+              "question": {
+                "type": "quiz",
+                "prompt": "Pinyin chính xác của 爸 là gì?",
+                "options": [
+                  "bà",
+                  "bā"
+                ],
+                "answer": "bà",
+                "explanation": "爸 đọc bà (bố, thanh 4); 八 đọc bā (tám, thanh 1).",
+                "hint": "Từ chỉ bố mang thanh 4.",
+                "knowledge": [
+                  "word-dad",
+                  "tone-four",
+                  "tone-one"
+                ]
+              }
+            },
+            {
+              "id": "match-meaning",
+              "phase": "final",
+              "question": {
+                "type": "match",
+                "prompt": "Ghép hai chữ mới với nghĩa đã học.",
+                "options": [
+                  "妈|Mẹ",
+                  "爸|Bố"
+                ],
+                "answer": "matched",
+                "explanation": "妈 là mẹ; 爸 là bố. Hai từ này khác thanh và khác chữ.",
+                "hint": "Chỉ ghép hai từ mới; không yêu cầu các từ minh họa âm.",
+                "knowledge": [
+                  "word-mom",
+                  "word-dad"
+                ]
+              }
+            }
+          ],
+          "introduces": []
+        },
+        {
+          "id": "srs",
+          "kind": "srs",
+          "title": "7/7 · Lên lịch ôn hai từ mới",
+          "body": "Hôm nay bạn thực sự cần ghi nhớ 妈 (mā – mẹ) và 爸 (bà – bố), đồng thời nhận diện đường giọng của bốn thanh điệu. Nhóm ví dụ má, mà ở màn nghe chỉ để minh họa, không buộc nhớ mặt chữ/ nghĩa. Học thật sẽ dùng lịch ôn từ vựng SRS có sẵn, còn preview không cộng XP và không ghi dữ liệu.",
+          "steps": [
+            "Ngày mai che Pinyin, tự đọc và viết 妈 / 爸 theo nghĩa tiếng Việt.",
+            "Ôn lại hai từ từ Bài 1B là 八 / 马 trước khi học tiếp.",
+            "Nếu chưa nhớ từ nào, đánh giá Chưa nhớ để từ đó xuất hiện sớm hơn.",
+            "Tập nhận ra thanh 2 đi lên và thanh 4 đi xuống; khi chưa chắc âm, nghe lại audio Mandarin chất lượng cao."
+          ],
+          "introduces": []
+        }
+      ]
+    }
+  ]
+}

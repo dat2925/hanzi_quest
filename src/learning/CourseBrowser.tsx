@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { beginner } from "./demo";
 import { book1, lesson1a } from "./book1";
 import { Book1BEntry } from "./Book1BEntry";
+import { CurriculumLessonEntry } from "./CurriculumLessonEntry";
+import { book1c, lesson1c } from "./book1c";
 import {
   loadCourseIndex,
   loadChapterIndex,
@@ -185,6 +187,20 @@ export function CourseBrowser({
         )}
       </section>
       <Book1BEntry
+        cloud={cloud}
+        onLoaded={onLoaded}
+        onStudy={onStudy}
+        onPreview={setPreview}
+        isUnlocked={isUnlocked}
+        reloadKey={retry}
+      />
+      <CurriculumLessonEntry
+        courseId={book1c.courseId}
+        draft={lesson1c}
+        label="Bài 1C"
+        title="Bài 1C · Bốn thanh điệu tiếng Trung"
+        description="Bảy màn học: bốn thanh điệu, hai từ 妈 và 爸, ôn 八/马, sáu thẻ tự nhớ, viết vào vở, chín hoạt động kiểm tra và SRS."
+        prerequisiteLabel="Bài 1B · Làm quen với Pinyin"
         cloud={cloud}
         onLoaded={onLoaded}
         onStudy={onStudy}
