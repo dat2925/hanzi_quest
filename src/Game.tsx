@@ -1,6 +1,7 @@
 import { TeachingScreen } from "./learning/TeachingScreen";
 import { RecallCards } from "./learning/RecallCards";
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   Check,
@@ -174,6 +175,9 @@ export default function Game({
   previewMode = false,
   resume,
   onState,
+  pageMode = false,
+  resultContent,
+  resultActions,
 }: {
   lesson: Lesson;
   sound: boolean;
@@ -183,11 +187,14 @@ export default function Game({
     seconds: number,
     answers: { hanzi: string; correct: boolean }[],
     state: GameSnapshot,
-  ) => void | boolean;
+  ) => void | boolean | Promise<void | boolean>;
   practice?: boolean;
   previewMode?: boolean;
   resume?: GameSnapshot;
   onState?: (state: GameSnapshot) => void;
+  pageMode?: boolean;
+  resultContent?: ReactNode;
+  resultActions?: ReactNode;
 }) {
   const [base] = useState(
     () =>
@@ -220,6 +227,7 @@ export default function Game({
   const start = useRef(base.startedAt);
   const committed = useRef(false);
   const finishRef = useRef<HTMLButtonElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const [questions] = useState(() => base.questions);
   const onStateRef = useRef(onState);
   onStateRef.current = onState;
@@ -269,6 +277,26 @@ export default function Game({
   const finished = lesson.learning
     ? screenIndex >= lesson.learning.screens.length
     : step > lesson.questions.length;
+  const completeRef = useRef(onComplete);
+  completeRef.current = onComplete;
+  useEffect(() => {
+    if (!pageMode || !finished || committed.current) return;
+    committed.current = true;
+    Promise.resolve(
+      completeRef.current(
+        score / questions.length,
+        (Date.now() - start.current) / 1000,
+        results,
+        snapshot,
+      ),
+    )
+      .then((saved) => {
+        if (saved === false) committed.current = false;
+      })
+      .catch(() => {
+        committed.current = false;
+      });
+  }, [finished, pageMode]);
   function check() {
     if (!selection) return;
     const correct = selection === q.answer && !assisted;
@@ -306,6 +334,9 @@ export default function Game({
     finishRef.current?.focus();
   }, [step, screenIndex, feedback]);
   useEffect(() => {
+    if (pageMode) bodyRef.current?.scrollTo(0, 0);
+  }, [step, screenIndex, pageMode]);
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -313,11 +344,11 @@ export default function Game({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
   return (
-    <div className="modal-backdrop">
+    <div className={pageMode ? "learning-page" : "modal-backdrop"}>
       <section
-        className="game-modal"
-        role="dialog"
-        aria-modal="true"
+        className={pageMode ? "learning-session" : "game-modal"}
+        role={pageMode ? "region" : "dialog"}
+        aria-modal={pageMode ? undefined : true}
         aria-labelledby="game-title"
       >
         <header className="game-top">
@@ -328,18 +359,45 @@ export default function Game({
           >
             <X />
           </button>
-          <div className="progress">
+          <div
+            className="progress"
+            role="progressbar"
+            aria-label="Tiến độ bài học"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(
+              lesson.learning
+                ? Math.min(
+                    100,
+                    (screenIndex / lesson.learning.screens.length) * 100,
+                  )
+                : (Math.max(0, step + 1) / (questions.length + 2)) * 100,
+            )}
+          >
             <i
               style={{
                 width: `${lesson.learning ? (screenIndex / lesson.learning.screens.length) * 100 : (Math.max(0, step + 1) / (lesson.questions.length + 2)) * 100}%`,
               }}
             />
           </div>
-          <span>
-            <Star size={18} /> {score}
+          <span className="learning-screen-label">
+            {pageMode ? (
+              finished ? (
+                "Hoàn thành"
+              ) : lesson.learning ? (
+                `Màn ${screenIndex + 1}/${lesson.learning.screens.length}`
+              ) : (
+                `${Math.max(0, step + 1)}/${questions.length + 2}`
+              )
+            ) : (
+              <>
+                <Star size={18} /> {score}
+              </>
+            )}
           </span>
+          {pageMode && <p className="learning-title">{lesson.title}</p>}
         </header>
-        <div className="game-body">
+        <div className="game-body" ref={bodyRef}>
           {previewMode && (
             <p className="note-box">
               XEM TRƯỚC · Không lưu tiến độ, XP hoặc lịch ôn.
@@ -444,25 +502,30 @@ export default function Game({
               <p role="status">{audioError}</p>
             </>
           ) : finished ? (
-            <div className="result">
-              <Panda />
-              <span className="eyebrow">MỘT BƯỚC NHỎ, MỘT TIẾN BỘ LỚN</span>
-              <h2 id="game-title">
-                {score === lesson.questions.length
-                  ? "Bạn làm tốt lắm!"
-                  : "Cứ luyện tập, bạn sẽ nhớ!"}
-              </h2>
-              <p>
-                Đúng {score}/{lesson.questions.length} thử thách ·{" "}
-                {Math.round((score / lesson.questions.length) * 100)}% chính xác
-              </p>
-              <p>
-                {practice
-                  ? "Kết quả ôn tập sẽ cập nhật lịch nhắc lại của bạn."
-                  : "Đạt từ 70% để hoàn thành và đáp ứng điều kiện cho các bài tiếp theo."}{" "}
-                Từ đúng được tăng khoảng cách ôn; từ sai ôn sau 10 phút.
-              </p>
-            </div>
+            pageMode && resultContent ? (
+              resultContent
+            ) : (
+              <div className="result">
+                <Panda />
+                <span className="eyebrow">MỘT BƯỚC NHỎ, MỘT TIẾN BỘ LỚN</span>
+                <h2 id="game-title">
+                  {score === lesson.questions.length
+                    ? "Bạn làm tốt lắm!"
+                    : "Cứ luyện tập, bạn sẽ nhớ!"}
+                </h2>
+                <p>
+                  Đúng {score}/{lesson.questions.length} thử thách ·{" "}
+                  {Math.round((score / lesson.questions.length) * 100)}% chính
+                  xác
+                </p>
+                <p>
+                  {practice
+                    ? "Kết quả ôn tập sẽ cập nhật lịch nhắc lại của bạn."
+                    : "Đạt từ 70% để hoàn thành và đáp ứng điều kiện cho các bài tiếp theo."}{" "}
+                  Từ đúng được tăng khoảng cách ôn; từ sai ôn sau 10 phút.
+                </p>
+              </div>
+            )
           ) : writing ? (
             <>
               <span className="eyebrow">DỪNG MỘT CHÚT · LẤY VỞ RA NÀO</span>
@@ -632,7 +695,9 @@ export default function Game({
           )}
         </div>
         <footer className="game-footer">
-          {finished ? (
+          {finished && pageMode ? (
+            resultActions
+          ) : finished ? (
             <button
               ref={finishRef}
               className="primary"

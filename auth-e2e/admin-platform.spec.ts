@@ -147,7 +147,7 @@ for (const width of [390, 1440])
       await lesson
         .getByRole("button", { name: "Xem thử", exact: true })
         .click();
-      await expect(page.getByRole("dialog")).toContainText("XEM TRƯỚC");
+      await expect(page.locator(".learning-page")).toContainText("XEM TRƯỚC");
       await page
         .getByRole("button", { name: "Đóng bài học", exact: true })
         .click();

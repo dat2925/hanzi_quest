@@ -243,15 +243,40 @@ export async function adminFixture({
         if (url.pathname.endsWith("/lessons")) {
           return (
             await db.query(
-              "select l.id,l.content_json,l.sort_order,jsonb_build_object('sort_order',u.sort_order,'courses',jsonb_build_object('sort_order',c.sort_order)) as units from public.lessons l join public.units u on u.id=l.unit_id join public.courses c on c.id=u.course_id where u.course_id=$1 and ($2::text is null or l.id=$2) and ($3::text is null or l.unit_id=$3) order by l.sort_order",
+              "select l.id,l.content_json,l.sort_order,jsonb_build_object('sort_order',u.sort_order,'courses',jsonb_build_object('sort_order',c.sort_order)) as units from public.lessons l join public.units u on u.id=l.unit_id join public.courses c on c.id=u.course_id where ($1::text is null or u.course_id=$1) and ($2::text is null or l.id=$2) and ($3::text is null or l.unit_id=$3) order by l.sort_order",
               [
-                url.searchParams.get("units.course_id")?.replace(/^eq\./, ""),
+                url.searchParams.get("units.course_id")?.replace(/^eq\./, "") ||
+                  null,
                 url.searchParams.get("id")?.replace(/^eq\./, "") || null,
                 url.searchParams.get("unit_id")?.replace(/^eq\./, "") || null,
               ],
             )
           ).rows;
         }
+        if (url.pathname.endsWith("/lesson_prerequisites"))
+          return (
+            await db.query(
+              "select lesson_id,requires_lesson_id from public.lesson_prerequisites where ($1::text is null or lesson_id=$1) and ($2::text is null or requires_lesson_id=$2)",
+              [
+                url.searchParams.get("lesson_id")?.replace(/^eq\./, "") || null,
+                url.searchParams
+                  .get("requires_lesson_id")
+                  ?.replace(/^eq\./, "") || null,
+              ],
+            )
+          ).rows;
+        if (url.pathname.endsWith("/study_sessions"))
+          return (
+            (
+              await db.query(
+                "select score,xp_earned from public.study_sessions where operation_id=$1 and user_id=$2",
+                [
+                  url.searchParams.get("operation_id")?.replace(/^eq\./, ""),
+                  url.searchParams.get("user_id")?.replace(/^eq\./, ""),
+                ],
+              )
+            ).rows[0] || null
+          );
         throw new Error("UNKNOWN_REST_PATH");
       });
       send(200, data);

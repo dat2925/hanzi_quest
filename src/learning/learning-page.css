@@ -1,0 +1,308 @@
+.learning-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+.learning-session {
+  height: 100dvh;
+  overflow: hidden;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.learning-page .game-top {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 20px max(24px, calc((100vw - 1040px) / 2));
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.learning-page .game-top .icon-button {
+  width: 44px;
+  height: 44px;
+  color: var(--text);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.learning-page .game-top .progress {
+  width: 100%;
+  height: 14px;
+  background: var(--soft);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.learning-page .game-top .progress i {
+  display: block;
+  height: 100%;
+  background: var(--green);
+  border-radius: inherit;
+}
+.learning-page .game-top .learning-screen-label {
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.learning-page .game-body {
+  flex: 1;
+  width: min(100%, 860px);
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 30px 64px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-height: none;
+}
+.learning-page .game-body h2 {
+  font-size: clamp(23px, 3vw, 32px);
+  line-height: 1.4;
+  margin: 12px 0 22px;
+}
+.learning-page .game-guide {
+  font-size: 17px;
+  line-height: 1.9;
+  max-width: 72ch;
+}
+.learning-page .game-footer {
+  flex-shrink: 0;
+  position: static;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  margin: 0;
+  padding: 20px max(24px, calc((100vw - 1040px) / 2));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 20px #20352008;
+}
+.learning-title {
+  grid-column: 2 / 4;
+  margin: -10px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.learning-page .game-footer button {
+  min-height: 52px;
+  min-width: 160px;
+  padding: 14px 22px;
+  border-radius: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.learning-page .game-footer .primary {
+  background: var(--green);
+  color: #fff;
+}
+.learning-page .game-footer .secondary {
+  color: var(--text);
+  background: var(--soft);
+  border: 1px solid var(--line);
+}
+.learning-page .options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+.learning-page .options button,
+.learning-page .match-grid button {
+  min-height: 64px;
+  border-radius: 14px;
+  white-space: normal;
+  font-size: 17px;
+}
+.learning-page .word-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.learning-page .word-tiles > div {
+  min-width: 0;
+}
+.learning-page .word-tiles b[lang="zh"],
+.learning-page .word-tiles > div > button > b {
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: clamp(40px, 6vw, 58px);
+  line-height: 1.6;
+}
+.learning-page .word-tiles span {
+  color: var(--green);
+  font-size: 17px;
+}
+.learning-page .word-tiles small {
+  font-size: 14px;
+  line-height: 1.8;
+}
+.learning-page .lesson-example {
+  padding: 20px;
+  line-height: 1.9;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.learning-page .lesson-example strong[lang="zh"] {
+  font-size: 30px;
+  font-family: "Noto Sans SC", sans-serif;
+}
+.learning-page .note-box,
+.learning-page .lesson-steps {
+  line-height: 1.85;
+  font-size: 15px;
+}
+.learning-page .writing-pad {
+  width: min(100%, 360px);
+  margin: 24px auto;
+}
+.learning-page .writing-pad canvas {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  touch-action: none;
+}
+.learning-page button {
+  min-height: 44px;
+}
+.learning-page .game-body input,
+.learning-page .game-body button,
+.learning-page .game-body img,
+.learning-page .game-body audio {
+  max-width: 100%;
+}
+.learning-result {
+  display: grid;
+  gap: 22px;
+  text-align: center;
+  justify-items: center;
+  padding: 24px 0;
+}
+.learning-result > svg {
+  color: var(--green);
+}
+.learning-result h1 {
+  font-size: clamp(23px, 3vw, 32px);
+  line-height: 1.5;
+}
+.learning-result-stats {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.learning-result-stats > div {
+  display: grid;
+  gap: 10px;
+  background: var(--surface);
+  padding: 24px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.learning-result-stats b {
+  font-size: 32px;
+  color: var(--green);
+}
+.learning-result-stats span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.learning-review-words {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.learning-review-words span {
+  font:
+    28px "Noto Sans SC",
+    sans-serif;
+  padding: 12px 20px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  border-radius: 12px;
+}
+.learning-status {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.learning-status > section {
+  width: min(100%, 640px);
+  padding: 32px;
+}
+.learning-status button {
+  margin: 10px 10px 0 0;
+}
+.learning-status p {
+  line-height: 1.8;
+}
+.learning-save-warning {
+  position: fixed;
+  left: 16px;
+  bottom: 100px;
+  right: 16px;
+  z-index: 8;
+  padding: 12px;
+  border: 1px solid #b66c3d;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+}
+@media (max-width: 600px) {
+  .learning-page .game-top {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .learning-page .game-body {
+    padding: 28px 18px 48px;
+  }
+  .learning-page .game-guide {
+    font-size: 16px;
+  }
+  .learning-page .word-tiles,
+  .learning-page .options {
+    grid-template-columns: 1fr;
+  }
+  .learning-page .game-footer {
+    padding: 14px 16px max(14px, env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+  }
+  .learning-page .game-footer button {
+    flex: 1;
+    min-width: 130px;
+  }
+  .learning-result-stats {
+    gap: 8px;
+  }
+  .learning-result-stats > div {
+    padding: 18px 8px;
+  }
+  .learning-result-stats b {
+    font-size: 25px;
+  }
+  .learning-page .match-grid {
+    gap: 10px;
+  }
+  .learning-page .match-grid button {
+    font-size: 15px;
+    padding: 12px 8px;
+  }
+}

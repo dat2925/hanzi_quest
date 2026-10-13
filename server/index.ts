@@ -161,7 +161,7 @@ const http = createServer(async (req, res) => {
       .end(JSON.stringify({ status: "ok", application: "hanzi-quest" }));
     return;
   }
-  if (req.method === "GET" && pathname === "/") {
+  if (req.method === "GET" && (pathname === "/" || /^\/learn\/[a-z][a-z0-9-]{1,99}\/?$/.test(pathname))) {
     try {
       res
         .writeHead(200, {

@@ -32,7 +32,6 @@ import { loadCourseIndex, loadCurriculum } from "../cloud/curriculum";
 import { Panda } from "../Art";
 import type { Progress } from "../progress";
 import { canStudy } from "../progress";
-import Game from "../Game";
 import { validateBundle, type Bundle } from "./schema";
 import { compileBundle } from "./adapter";
 
@@ -113,7 +112,6 @@ export function CourseJourney({
 
   // Dev preview tools
   const [previewBundle, setPreviewBundle] = useState<Bundle>();
-  const [previewGameLesson, setPreviewGameLesson] = useState<Lesson>();
   const [jsonError, setJsonError] = useState("");
 
   // Course membership comes from the server relation, not a lesson ID prefix.
@@ -735,7 +733,7 @@ export function CourseJourney({
                       const compiled = compileBundle(previewBundle).find(
                         (c) => c.id === l.id,
                       );
-                      if (compiled) setPreviewGameLesson(compiled);
+                      if (compiled) onPreview(compiled);
                     }}
                   >
                     Xem thử: {l.title}
@@ -747,16 +745,6 @@ export function CourseJourney({
         </aside>
       </div>
 
-      {/* Preview modal for Dev bundle if triggered */}
-      {previewGameLesson && (
-        <Game
-          lesson={previewGameLesson}
-          sound={true}
-          onClose={() => setPreviewGameLesson(undefined)}
-          onComplete={() => setPreviewGameLesson(undefined)}
-          previewMode
-        />
-      )}
     </div>
   );
 }

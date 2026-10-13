@@ -21,6 +21,7 @@ export const progressSchema = z.object({
       xp: z.number(),
       lesson: z.string(),
       accuracy: z.number(),
+      sessionId: z.uuid().optional(),
     }),
   ),
   reviews: z.record(z.string(), reviewSchema),

@@ -32,6 +32,7 @@ export const gameSnapshotSchema = z.object({
   step: z.number().int().min(-1),
   score: z.number().int().nonnegative(),
   startedAt: z.number(),
+  checkpointAt: z.number().nonnegative().optional(),
   questions: z.array(question),
   responses: z.array(
     z.object({ selection: z.string(), assisted: z.boolean() }),
@@ -47,6 +48,27 @@ export const gameSnapshotSchema = z.object({
     .default({}),
 });
 export type GameSnapshot = z.infer<typeof gameSnapshotSchema>;
+export function newestCheckpoint(
+  lesson: Lesson,
+  candidates: unknown[],
+): GameSnapshot | undefined {
+  const expected = gameSnapshotSchema.shape.lesson.safeParse(lesson);
+  if (!expected.success) return undefined;
+  return candidates
+    .map((value) => gameSnapshotSchema.safeParse(value))
+    .filter((value) => value.success)
+    .map((value) => value.data!)
+    .filter(
+      (value) =>
+        value.lesson.id === lesson.id &&
+        JSON.stringify(value.lesson.questions) ===
+          JSON.stringify(expected.data.questions),
+    )
+    .sort(
+      (a, b) =>
+        (b.checkpointAt ?? b.startedAt) - (a.checkpointAt ?? a.startedAt),
+    )[0];
+}
 export function newGame(
   lesson: Lesson,
   practice: boolean,

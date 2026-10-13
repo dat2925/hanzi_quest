@@ -118,12 +118,12 @@ for (const width of [390, 1440])
       await page
         .getByRole("button", { name: /Xem thử: \[QA ONLY\].*1$/ })
         .click();
-      await expect(page.getByRole("dialog")).toContainText("XEM TRƯỚC");
-      await expect(page.getByRole("dialog")).toContainText(
+      await expect(page.locator(".learning-page")).toContainText("XEM TRƯỚC");
+      await expect(page.locator(".learning-page")).toContainText(
         "1/7 · Một âm, nhiều thanh điệu",
       );
       await page
-        .getByRole("dialog")
+        .locator(".learning-page")
         .getByRole("button", { name: "Tiếp tục", exact: true })
         .click();
       await page.getByRole("button", { name: "Đóng bài học" }).click();
@@ -206,7 +206,10 @@ for (const width of [390, 1440])
         });
       await expect(fresh).toBeVisible();
       await fresh.getByRole("button", { name: "Học ngay" }).click();
-      await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
+      await expect(page.locator(".learning-session")).toBeVisible();
+      await expect(page.locator(".learning-page")).not.toContainText(
+        "XEM TRƯỚC",
+      );
       expect(errors).toEqual([]);
     } finally {
       await f.close();
