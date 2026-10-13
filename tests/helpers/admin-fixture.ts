@@ -100,6 +100,11 @@ export async function adminFixture({ publish1c = true } = {}) {
       "utf8",
     ),
   );
+  // Match Supabase's service role for the server-only vocabulary lookup.
+  // This applies only to the isolated test database, never browser roles.
+  await db.exec(
+    "alter role service_role bypassrls; grant select on public.vocabulary to service_role;",
+  );
   await db.query("insert into public.curriculum_admins(user_id) values($1)", [
     adminIds[0],
   ]);
@@ -183,6 +188,13 @@ export async function adminFixture({ publish1c = true } = {}) {
             params,
           );
           return row.rows[0].value;
+        }
+        if (url.pathname.endsWith("/vocabulary")) {
+          // The API checks vocabulary as service_role, just like production.
+          if (!service) throw new Error("SERVICE_REQUIRED");
+          return (
+            await db.query("select id,pinyin,meaning_vi from public.vocabulary")
+          ).rows;
         }
         if (url.pathname.endsWith("/courses"))
           return (

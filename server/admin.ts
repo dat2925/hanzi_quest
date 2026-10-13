@@ -165,6 +165,71 @@ export function createCurriculumAdminHandler(env = process.env) {
             : "save",
         raw.expected,
       );
+      if (action === "review" || action === "publish") {
+        // Keep existing SRS readings for whitespace-only Pinyin variants.
+        // Normalize compiled words/practice only; authored learning remains unchanged.
+        const ids = [
+          ...new Set(
+            batch.rows.flatMap((r) => r.content.words.map((w) => w.hanzi)),
+          ),
+        ];
+        const known = new Map<
+          string,
+          { pinyin: string; meaning: string; source: string }
+        >();
+        for (let from = 0; from < ids.length; from += 50) {
+          const { data, error } = await db
+            .from("vocabulary")
+            .select("id,pinyin,meaning_vi")
+            .in("id", ids.slice(from, from + 50));
+          if (error)
+            throw new Error(
+              "Không đọc được kho từ vựng để kiểm tra xuất bản. Hãy thử lại.",
+            );
+          for (const w of data || [])
+            known.set(w.id, {
+              pinyin: w.pinyin,
+              meaning: w.meaning_vi,
+              source: "Kho từ vựng hiện tại",
+            });
+        }
+        const conflicts: string[] = [];
+        for (const r of batch.rows)
+          for (const [index, w] of r.content.words.entries()) {
+            const old = known.get(w.hanzi);
+            const sameReading =
+              old &&
+              old.pinyin.normalize("NFC").replace(/\s/g, "") ===
+                w.pinyin.normalize("NFC").replace(/\s/g, "");
+            if (old && sameReading && old.meaning === w.meaning) {
+              r.content.words[index] = { ...w, pinyin: old.pinyin };
+              for (const { question } of r.bank)
+                if (
+                  !question.contentId &&
+                  question.audio === w.hanzi &&
+                  question.type === "quiz" &&
+                  question.prompt === `Pinyin của ${w.hanzi} là gì?`
+                )
+                  question.answer = old.pinyin;
+            } else if (old) {
+              conflicts.push(
+                `${r.learning.title} (${r.id}) · ${w.hanzi}\n${old.source}: ${JSON.stringify(old.pinyin)} — ${JSON.stringify(old.meaning)}\nBài mới: ${JSON.stringify(w.pinyin)} — ${JSON.stringify(w.meaning)}`,
+              );
+            } else if (!old) {
+              known.set(w.hanzi, {
+                pinyin: w.pinyin,
+                meaning: w.meaning,
+                source: `Bài ${r.id} trong cùng lô`,
+              });
+            }
+          }
+        if (conflicts.length)
+          throw new Error(
+            "VOCABULARY_CONFLICT_REVIEW_READING_AND_MEANING\n" +
+              "Chưa duyệt/xuất bản lô bài. Hãy đối chiếu nguồn, sửa Pinyin/nghĩa trong bản nháp rồi lưu và duyệt lại.\n" +
+              conflicts.join("\n\n"),
+          );
+      }
       if (action === "validate")
         send(200, { bundle: batch.bundle, ids: batch.rows.map((r) => r.id) });
       else

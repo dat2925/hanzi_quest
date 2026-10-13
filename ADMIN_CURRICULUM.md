@@ -23,6 +23,12 @@ Dữ liệu mẫu cũ gắn câu ôn nghĩa/Pinyin của `你好` với các m�
 
 Sau khi kiểm tra và chạy riêng file `005` bằng SQL Editor, tải lại Admin, chọn các bản nháp đã duyệt rồi thử **Chuẩn bị xuất bản → Xác nhận xuất bản**. Không cần xóa/nhập lại bài, đổi ID hay chạy lại migration Admin `004`. Bản sửa chưa được thực thi trên production bởi Codex. Test hồi quy dùng database cô lập tái hiện chính khóa `你好` cũ, kiểm tra đáp án khác bị chặn và ngân hàng câu hỏi/bài cũ được giữ nguyên.
 
+### Lỗi `VOCABULARY_CONFLICT_REVIEW_READING_AND_MEANING`
+
+Kho từ vựng dùng chữ Hán làm ID chung. Nếu bài mới dùng cùng chữ nhưng khác nghĩa hoặc cách đọc, lô bị chặn. Backend kiểm tra khi duyệt/xuất bản và báo tên bài, chữ Hán, Pinyin/nghĩa hiện tại và bản mới; sửa bản nháp theo nguồn đã đối chiếu rồi lưu và duyệt lại.
+
+Các khác biệt chỉ do khoảng trắng trong Pinyin (ví dụ `zài jiàn` và `zàijiàn`) được backend đồng nhất với cách ghi hiện có cho từ vựng biên dịch và câu luyện SRS tự sinh. Nội dung giảng dạy vẫn giữ Pinyin tách âm tiết để qua validator. Nghĩa khác (`Tôi, mình` và `Tôi`) hoặc dấu thanh khác vẫn bị chặn. Không cập nhật kho từ vựng/ngân hàng câu hỏi cũ. Thay đổi này cần triển khai backend mới, không cần migration SQL; chưa được chạy trên production bởi Codex.
+
 ### Quyền và an toàn
 
 Frontend chỉ giữ publishable key và JWT người đăng nhập. Node xác minh JWT qua Supabase Auth, kiểm tra `curriculum_admin_access`, rồi dùng secret server gọi RPC. Database kiểm tra membership lần nữa. Các RPC ghi/đọc draft chỉ được grant cho `service_role`; kể cả admin đang đăng nhập bằng role authenticated cũng không được gọi trực tiếp hoặc ghi bảng. Ba bảng mới bật RLS, không có policy/grant cho trình duyệt. Không nới RLS hoặc grant ghi trên bảng học viên hiện có.

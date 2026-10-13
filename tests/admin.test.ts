@@ -9,6 +9,133 @@ import { book1c } from "../src/learning/book1c";
 import { lessons, type Lesson } from "../src/data";
 import { operation, questionKey } from "../src/cloud/operations";
 
+test("vocabulary conflicts identify the lesson, word and both values without publishing any part of the batch", async () => {
+  const f = await adminFixture();
+  const b = qaBatch(2);
+  const vocab = b.lessons[0].screens.find((s) => s.kind === "vocabulary")!;
+  // Reproduce the submitted 4B/4C vocabulary against the project's seeded rows.
+  vocab.words.push(
+    {
+      hanzi: "我",
+      pinyin: "wǒ",
+      meaning: "Tôi, mình",
+      tones: [3],
+      example: { hanzi: "我", pinyin: "wǒ", meaning: "Tôi" },
+    },
+    {
+      hanzi: "再见",
+      pinyin: "zài jiàn",
+      meaning: "Tạm biệt",
+      tones: [4, 4],
+      example: { hanzi: "再见", pinyin: "zài jiàn", meaning: "Tạm biệt" },
+    },
+  );
+  const ids = b.lessons.map((l) => l.id);
+  const cmd = (data: object) => ({ requestId: crypto.randomUUID(), ...data });
+  const ok = async (path: string, data: object) => {
+    const r = await f.request(path, cmd(data));
+    assert.equal(r.status, 200, JSON.stringify(r.body));
+  };
+  try {
+    await f.db.exec("reset role;");
+    const originalVocabulary = (
+      await f.db.query("select * from public.vocabulary order by id")
+    ).rows;
+    const originalLessons = (
+      await f.db.query("select * from public.lessons order by id")
+    ).rows;
+    await ok("/save", { bundle: b });
+    const selection = {
+      courseId: b.courseId,
+      ids,
+      expected: Object.fromEntries(ids.map((id) => [id, 1])),
+    };
+    const reviewBlocked = await f.request(
+      "/review",
+      cmd({ ...selection, sourceChecked: true, previewsChecked: true }),
+    );
+    assert.equal(reviewBlocked.status, 400);
+    assert.match(reviewBlocked.body.error, /"Tôi, mình"/);
+    const blocked = await f.request("/publish", cmd(selection));
+    assert.equal(blocked.status, 400);
+    assert.match(
+      blocked.body.error,
+      /VOCABULARY_CONFLICT_REVIEW_READING_AND_MEANING/,
+    );
+    assert.match(blocked.body.error, /我/);
+    assert.match(blocked.body.error, /"Tôi"/);
+    assert.match(blocked.body.error, /"Tôi, mình"/);
+    // Spacing alone is compatible; it must not be reported as a reading conflict.
+    assert.ok(!blocked.body.error.includes("再见"));
+    assert.ok(blocked.body.error.includes(b.lessons[0].id));
+    await f.db.exec("reset role;");
+    assert.deepEqual(
+      (await f.db.query("select * from public.vocabulary order by id")).rows,
+      originalVocabulary,
+    );
+    assert.deepEqual(
+      (await f.db.query("select * from public.lessons order by id")).rows,
+      originalLessons,
+    );
+    vocab.words.find((w) => w.hanzi === "我")!.meaning = "Tôi";
+    // A different tone is a real conflict, even when the meaning now matches.
+    vocab.words.find((w) => w.hanzi === "我")!.pinyin = "wò";
+    vocab.words.find((w) => w.hanzi === "我")!.tones = [4];
+    await ok("/save", { bundle: b, expected: selection.expected });
+    selection.expected = Object.fromEntries(ids.map((id) => [id, 2]));
+    const wrongTone = await f.request(
+      "/review",
+      cmd({ ...selection, sourceChecked: true, previewsChecked: true }),
+    );
+    assert.equal(wrongTone.status, 400);
+    assert.match(wrongTone.body.error, /"wǒ"/);
+    assert.match(wrongTone.body.error, /"wò"/);
+    vocab.words.find((w) => w.hanzi === "我")!.pinyin = "wǒ";
+    vocab.words.find((w) => w.hanzi === "我")!.tones = [3];
+    await ok("/save", { bundle: b, expected: selection.expected });
+    selection.expected = Object.fromEntries(ids.map((id) => [id, 3]));
+    await ok("/review", {
+      ...selection,
+      sourceChecked: true,
+      previewsChecked: true,
+    });
+    await ok("/publish", selection);
+    await f.db.exec("reset role;");
+    const published = (
+      await f.db.query<{ content_json: Lesson }>(
+        "select content_json from public.lessons where id=$1",
+        [b.lessons[0].id],
+      )
+    ).rows[0].content_json;
+    assert.equal(
+      published.words.find((w) => w.hanzi === "再见")!.pinyin,
+      "zàijiàn",
+    );
+    const taught = published.learning!.screens.find(
+      (s) => s.kind === "vocabulary",
+    )!;
+    assert.equal(
+      taught.words.find((w) => w.hanzi === "再见")!.pinyin,
+      "zài jiàn",
+    );
+    const practice = (
+      await f.db.query<{ question_json: { answer: string } }>(
+        "select question_json from private.question_bank where question_key=$1",
+        [
+          questionKey({
+            type: "quiz",
+            prompt: "Pinyin của 再见 là gì?",
+            audio: "再见",
+          }),
+        ],
+      )
+    ).rows[0].question_json;
+    assert.equal(practice.answer, "zàijiàn");
+  } finally {
+    await f.close();
+  }
+});
+
 test("legacy 你好 practice targets are reused unchanged; different answers still block publication atomically", async () => {
   const f = await adminFixture();
   const b = qaBatch(1);
