@@ -177,6 +177,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      curriculum_admin_access: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
       learning_snapshot: { Args: Record<string, never>; Returns: Json };
       apply_learning_operation: {
         Args: { p_operation: Json };

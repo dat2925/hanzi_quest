@@ -1,5 +1,6 @@
 import { demo } from "./learning/demo";
 import { CourseBrowser } from "./learning/CourseBrowser";
+import { AdminCurriculum, AdminCurriculumLink } from "./admin/AdminCurriculum";
 import { RecallCards } from "./learning/RecallCards";
 import { useEffect, useState } from "react";
 import {
@@ -110,7 +111,15 @@ export default function App() {
   useEffect(() => {
     if (manager && !manager.progress.onboarded) setOnboard(true);
   }, [manager]);
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(() =>
+    new URLSearchParams(window.location.search).get("admin") === "curriculum"
+      ? "admin"
+      : "home",
+  );
+  const [adminPreview, setAdminPreview] = useState<Lesson | null>(null);
+  useEffect(() => {
+    setAdminPreview(null);
+  }, [manager?.userId]);
   const [game, setGame] = useState<Lesson | null>(null);
   const [practice, setPractice] = useState(false);
   const [preview, setPreview] = useState<Lesson | null>(null);
@@ -139,7 +148,7 @@ export default function App() {
     }
   }
   useEffect(() => {
-    if (!onboard && !preview && !game) return;
+    if (!onboard && !preview && !game && !adminPreview) return;
     const previous = document.activeElement as HTMLElement | null;
     const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
     const surfaces = [
@@ -162,6 +171,7 @@ export default function App() {
         setOnboard(false);
         setPreview(null);
         setGame(null);
+        setAdminPreview(null);
       }
       if (e.key !== "Tab") return;
       const elements = focusables();
@@ -194,7 +204,7 @@ export default function App() {
       document.removeEventListener("keydown", trap);
       previous?.focus();
     };
-  }, [onboard, preview, game]);
+  }, [onboard, preview, game, adminPreview]);
   useEffect(() => {
     try {
       if (!manager) localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
@@ -505,7 +515,11 @@ export default function App() {
         <header className="topbar">
           <div className="breadcrumb">
             Không gian học tập <ChevronRight size={14} />{" "}
-            <b>{nav.find((n) => n.id === page)?.label || "Cài đặt"}</b>
+            <b>
+              {page === "admin"
+                ? "Quản trị giáo trình"
+                : nav.find((n) => n.id === page)?.label || "Cài đặt"}
+            </b>
           </div>
           <div className="top-actions">
             <button className="course-button" onClick={() => setOnboard(true)}>
@@ -1604,6 +1618,12 @@ export default function App() {
               </div>
             </>
           )}
+          {page === "admin" && (
+            <AdminCurriculum
+              key={manager?.userId || "guest"}
+              onPreview={setAdminPreview}
+            />
+          )}
           {page === "settings" && (
             <>
               <PageHeading
@@ -1613,6 +1633,7 @@ export default function App() {
               />
               <section className="card settings-card">
                 <AccountSettings />
+                <AdminCurriculumLink onOpen={() => changePage("admin")} />
                 <h3>Hồ sơ & mục tiêu</h3>
                 <div className="setting-row">
                   <div>
@@ -1723,6 +1744,15 @@ export default function App() {
             <X size={16} />
           </button>
         </div>
+      )}
+      {adminPreview && (
+        <Game
+          lesson={adminPreview}
+          sound={p.sound}
+          previewMode
+          onClose={() => setAdminPreview(null)}
+          onComplete={() => setAdminPreview(null)}
+        />
       )}
       {onboard && (
         <Onboarding

@@ -9,6 +9,7 @@ import {
   RESOURCE_MIME_TYPE,
 } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
+import { createCurriculumAdminHandler } from "./admin";
 import { lessons as samples } from "../src/data.js";
 import { demo } from "../src/learning/demo.js";
 const lessons = [demo, ...samples];
@@ -147,7 +148,9 @@ export function makeServer() {
   return server;
 }
 const port = Number(process.env.PORT || process.env.MCP_PORT || 8787);
+const curriculumAdmin = createCurriculumAdminHandler();
 const http = createServer(async (req, res) => {
+  if (await curriculumAdmin(req, res)) return;
   const pathname = new URL(req.url || "/", `http://localhost:${port}`).pathname;
   if (req.method === "GET" && pathname === "/health") {
     res

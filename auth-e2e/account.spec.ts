@@ -10,7 +10,8 @@ const ids = {
 test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline note, isolation, reset", async ({
   browser,
 }) => {
-  test.setTimeout(120000);
+  // Full multi-device/offline/recovery flow; keep all assertions and allow CI/browser startup time.
+  test.setTimeout(180000);
   const db = new PGlite();
   const contexts: BrowserContext[] = [];
   let locked = Promise.resolve();
@@ -137,6 +138,9 @@ test("mock Auth + PostgreSQL RPC: signup/login, checkpoint, devices, offline not
           ),
         );
       if (url.pathname.includes("/rpc/")) {
+        // This fixture models a learner account; role checks are not learning operations.
+        if (url.pathname.endsWith("curriculum_admin_access"))
+          return fulfill(false);
         const execute = async () => {
           try {
             await db.exec(

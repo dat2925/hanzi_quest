@@ -39,7 +39,11 @@ export default defineConfig(({ mode }) => {
         },
       },
     ],
-    server: { port: 5173, strictPort: true },
+    server: {
+      port: 5173,
+      strictPort: true,
+      proxy: { "/api/admin": "http://127.0.0.1:8787" },
+    },
     build: {
       // Single-file HTML has no external chunks to preload. Avoid unresolved
       // preload placeholders when scripts are inlined by generateBundle.

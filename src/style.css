@@ -3664,6 +3664,17 @@ summary {
   max-width: 100%;
   height: auto;
 }
+
+.admin-curriculum fieldset { min-width: 0; margin: 20px 0; }
+.admin-curriculum legend { font-weight: 700; }
+.admin-curriculum label { display: block; margin: 12px 0; }
+.admin-curriculum textarea, .admin-curriculum select { width: 100%; max-width: 100%; min-width: 0; }
+.admin-curriculum textarea { font-family: monospace; font-size: 14px; padding: 12px; }
+.admin-curriculum .row { flex-wrap: wrap; }
+.admin-curriculum button { white-space: normal; margin: 6px 6px 6px 0; }
+.admin-message, .admin-lessons small { white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-lessons { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.admin-lessons article { display: block; min-width: 0; }
 .lesson-example {
   padding: 12px;
   border-left: 3px solid #447857;
