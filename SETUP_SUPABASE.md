@@ -20,6 +20,8 @@ Trong SQL Editor của project mới, chạy nội dung các file:
 
 Mỗi file dùng transaction. File schema dành cho database mới; không chạy lại file 001 khi đã áp dụng thành công. Lần nâng cấp sau phải thêm migration mới, không sửa/xóa migration đã áp dụng. Có thể dùng Supabase CLI (`supabase init`, `supabase link`, `supabase db push`) thay SQL Editor để lưu migration history; cần đối chiếu history nếu đã chạy thủ công. Không đưa access token CLI vào repository.
 
+Backend quản trị toàn hệ thống cần các migrations giáo trình/Admin hiện có tới `202610130005`, rồi migration mới `202610130006_platform_admin.sql`. Cấp admin đầu tiên bằng file manual riêng và cấu hình secret **server-only** theo [ADMIN_BACKEND.md](ADMIN_BACKEND.md). Quyền curriculum editor cũ không tự có quyền quản lý user. Chỉ chạy những migration chưa áp dụng, không chạy lại schema ban đầu trên dữ liệu thật.
+
 Bảng public: `profiles`, `courses`, `units`, `lessons`, `vocabulary`, `lesson_progress`, `stage_progress`, `review_items`, `notebook_entries`, `notebook_tasks`, `study_sessions`, `user_stats`, `sync_operations`, `legacy_imports`. Bảng `private.question_bank` chứa đáp án chuẩn dùng chấm điểm. Tất cả bảng public đều có RLS. Người học chỉ SELECT dữ liệu của chính mình; không có quyền ghi bảng trực tiếp, kể cả dữ liệu của mình. Các RPC kiểm tra `auth.uid()` và tự lấy owner, không tin `user_id` client gửi.
 
 Không cấp thêm quyền INSERT/UPDATE/DELETE cho `authenticated`, không cấp quyền schema `private`, không tắt RLS. Giáo trình chỉ đọc khi course/lesson được xuất bản; vocabulary có cờ xuất bản riêng.

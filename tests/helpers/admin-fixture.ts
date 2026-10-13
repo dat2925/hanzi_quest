@@ -2,6 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { createCurriculumAdminHandler } from "../../server/admin";
+import { createPlatformAdminHandler } from "../../server/platform-admin";
 import { book1c } from "../../src/learning/book1c";
 import type { Bundle } from "../../src/learning/schema";
 export const adminIds = Array.from(
@@ -41,7 +42,10 @@ const close = (server: Server) =>
     server.closeAllConnections();
     server.close((e) => (e ? reject(e) : resolve()));
   });
-export async function adminFixture({ publish1c = true } = {}) {
+export async function adminFixture({
+  publish1c = true,
+  platform = false,
+} = {}) {
   const db = new PGlite();
   await db.exec(
     "create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;",
@@ -108,6 +112,25 @@ export async function adminFixture({ publish1c = true } = {}) {
   await db.query("insert into public.curriculum_admins(user_id) values($1)", [
     adminIds[0],
   ]);
+  if (platform) {
+    await db.exec(
+      "alter table auth.users add column email text; alter table auth.users add column created_at timestamptz not null default now(); alter table auth.users add column last_sign_in_at timestamptz;",
+    );
+    for (const [i, id] of adminIds.entries())
+      await db.query("update auth.users set email=$2 where id=$1", [
+        id,
+        `user${i + 1}@example.test`,
+      ]);
+    await db.exec(
+      readFileSync(
+        "supabase/migrations/202610130006_platform_admin.sql",
+        "utf8",
+      ),
+    );
+    await db.query("insert into public.platform_admins(user_id) values($1)", [
+      adminIds[0],
+    ]);
+  }
   let queue: Promise<unknown> = Promise.resolve();
   const serial = <T>(task: () => Promise<T>): Promise<T> => {
     const next = queue.then(task, task);
@@ -159,6 +182,16 @@ export async function adminFixture({ publish1c = true } = {}) {
           const args = raw ? JSON.parse(raw) : {};
           const signatures: Record<string, string[]> = {
             curriculum_admin_access: [],
+            platform_admin_access: [],
+            user_account_active: [],
+            platform_admin_read: ["p_actor", "p_resource", "p_query"],
+            platform_admin_apply: [
+              "p_actor",
+              "p_request",
+              "p_action",
+              "p_digest",
+              "p_payload",
+            ],
             learning_snapshot: [],
             apply_learning_operation: ["p_operation"],
             curriculum_admin_read: ["p_actor", "p_course"],
@@ -234,7 +267,9 @@ export async function adminFixture({ publish1c = true } = {}) {
     VITE_APP_URL: "http://127.0.0.1:5174",
   };
   const handler = createCurriculumAdminHandler(env);
+  const platformHandler = createPlatformAdminHandler(env);
   const apiServer = createServer(async (req, res) => {
+    if (await platformHandler(req, res)) return;
     if (!(await handler(req, res))) res.writeHead(404).end();
   });
   const apiUrl = await listen(apiServer);
@@ -251,6 +286,32 @@ export async function adminFixture({ publish1c = true } = {}) {
     });
     return { status: response.status, body: await response.json() };
   };
+  const platformRequest = async (
+    path: string,
+    options: {
+      method?: string;
+      payload?: unknown;
+      actor?: string | null;
+      origin?: string;
+    } = {},
+  ) => {
+    const actor = options.actor === undefined ? adminIds[0] : options.actor;
+    const response = await fetch(apiUrl + "/api/admin" + path, {
+      method:
+        options.method || (options.payload === undefined ? "GET" : "POST"),
+      headers: {
+        ...(actor ? { Authorization: `Bearer ${tokenFor(actor)}` } : {}),
+        ...(options.payload === undefined
+          ? {}
+          : { "Content-Type": "application/json" }),
+        ...(options.origin ? { Origin: options.origin } : {}),
+      },
+      ...(options.payload === undefined
+        ? {}
+        : { body: JSON.stringify(options.payload) }),
+    });
+    return { status: response.status, body: await response.json() };
+  };
   return {
     db,
     serial,
@@ -260,6 +321,7 @@ export async function adminFixture({ publish1c = true } = {}) {
     apiUrl,
     env,
     request,
+    platformRequest,
     close: async () => {
       await close(apiServer);
       await close(supabaseMock);

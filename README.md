@@ -38,6 +38,8 @@ Chế độ phát triển có hot reload: `npm run dev`, mở http://127.0.0.1:5
 
 Quản trị/nhập lô 5–10 bài: xem [ADMIN_CURRICULUM.md](ADMIN_CURRICULUM.md) để bật quyền backend/database một lần, biên soạn từ nguồn, nhập draft, xem thử, duyệt và xuất bản trong ứng dụng. Bài mới published tự xuất hiện qua Supabase, không cần deploy từng bài. Không tự chạy migration production.
 
+Backend quản trị user, phân quyền, khóa tài khoản, khóa/chương/bài và nhật ký: xem [ADMIN_BACKEND.md](ADMIN_BACKEND.md). Cần migration `202610130006` và cấp platform admin đầu tiên riêng. Prompt giao diện cho Antigravity ở [ANTIGRAVITY_ADMIN_PROMPT.md](ANTIGRAVITY_ADMIN_PROMPT.md); phần FE mới chưa được xây.
+
 Giáo trình tương tác: xem [CURRICULUM.md](CURRICULUM.md) để biên soạn JSON, validate Zod, xem trước và xuất SQL draft/published. Production cần chạy migrations mới 004 rồi 005 theo [SETUP_SUPABASE.md](SETUP_SUPABASE.md). Chưa tự sinh giáo trình HSK đầy đủ.
 
 Bài 1B có bản xem thử 7 màn trong Hành trình, chỉ thêm hai từ 八 và 马. Xem [BOOK1B_REVIEW.md](BOOK1B_REVIEW.md) để duyệt nội dung, kiểm thử và chạy riêng SQL draft/publish sau khi đồng ý xuất bản.
