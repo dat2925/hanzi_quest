@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   GraduationCap,
   Leaf,
@@ -28,7 +28,7 @@ import { book1, lesson1a } from "./book1";
 import { book1b, lesson1b } from "./book1b";
 import { book1c, lesson1c } from "./book1c";
 import { demo } from "./demo";
-import { loadCourseIndex, loadChapterIndex, loadCurriculum } from "../cloud/curriculum";
+import { loadCourseIndex, loadCurriculum } from "../cloud/curriculum";
 import { Panda } from "../Art";
 import type { Progress } from "../progress";
 import { canStudy } from "../progress";
@@ -107,50 +107,67 @@ export function CourseJourney({
   const [cloudCourses, setCloudCourses] = useState<CourseInfo[]>([]);
   const [loadingCloud, setLoadingCloud] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  const refreshRef = useRef(onRefreshCurriculum);
+  refreshRef.current = onRefreshCurriculum;
 
   // Dev preview tools
   const [previewBundle, setPreviewBundle] = useState<Bundle>();
   const [previewGameLesson, setPreviewGameLesson] = useState<Lesson>();
   const [jsonError, setJsonError] = useState("");
 
-  // Load cloud courses index if cloud enabled
+  // Course membership comes from the server relation, not a lesson ID prefix.
   useEffect(() => {
     let active = true;
     if (cloud) {
       setLoadingCloud(true);
+      setSyncMessage("Đang tải bài học từ máy chủ…");
       loadCourseIndex()
-        .then((items) => {
+        .then(async (items) => {
           if (!active) return;
-          const remote: CourseInfo[] = items.map((c) => ({
-            id: c.id,
-            title: c.title,
-            subtitle: `Phiên bản: ${c.syllabus_version}`,
-            description: "Khóa học đồng bộ trực tiếp từ máy chủ đám mây Supabase.",
-            badge: "Cloud Course",
-            level: "Đồng bộ",
-            icon: Sparkles,
-            lessons: allLessons.filter(
-              (l) => l.learning && l.learning.id.startsWith(c.id),
-            ),
-            isCloud: true,
-          }));
+          const remote = await Promise.all(
+            items.map(async (c): Promise<CourseInfo> => ({
+              id: c.id,
+              title: c.title,
+              subtitle: `Phiên bản: ${c.syllabus_version}`,
+              description: "Khóa học đồng bộ trực tiếp từ máy chủ đám mây Supabase.",
+              badge: "Cloud Course",
+              level: "Đồng bộ",
+              icon: Sparkles,
+              lessons: await loadCurriculum(c.id),
+              isCloud: true,
+            })),
+          );
+          if (!active) return;
           setCloudCourses(remote);
-          setLoadingCloud(false);
+          setSyncMessage("Đã đồng bộ bài học thành công!");
+          refreshRef.current();
         })
         .catch(() => {
+          if (active)
+            setSyncMessage("Không thể đồng bộ bài học từ máy chủ lúc này. Bấm Đồng bộ Cloud để thử lại.");
+        })
+        .finally(() => {
           if (active) setLoadingCloud(false);
         });
+    } else {
+      setCloudCourses([]);
+      setLoadingCloud(false);
+      setSyncMessage("");
     }
     return () => {
       active = false;
     };
-  }, [cloud, allLessons]);
+  }, [cloud, reloadKey]);
 
-  // Combine courses (built-in + unique cloud courses)
+  // Preserve built-in presentation while replacing its fixed lessons with server data.
   const allCourses = useMemo(() => {
     const list = [...builtInCourses];
     for (const remote of cloudCourses) {
-      if (!list.some((c) => c.id === remote.id)) {
+      const index = list.findIndex((c) => c.id === remote.id);
+      if (index >= 0) {
+        list[index] = { ...list[index], lessons: remote.lessons, isCloud: true };
+      } else {
         list.push(remote);
       }
     }
@@ -165,21 +182,8 @@ export function CourseJourney({
     );
   }, [allCourses, activeCourseId, builtInCourses]);
 
-  // Sync cloud lessons for active course if cloud is active and course is empty
-  const handleReloadCloudCourse = async () => {
-    if (!cloud) return;
-    setLoadingCloud(true);
-    setSyncMessage("Đang tải dữ liệu từ máy chủ...");
-    try {
-      await loadCurriculum(activeCourse.id);
-      onRefreshCurriculum();
-      setSyncMessage("Đã đồng bộ bài học thành công!");
-    } catch {
-      setSyncMessage("Không thể đồng bộ bài học từ máy chủ lúc này.");
-    } finally {
-      setLoadingCloud(false);
-      setTimeout(() => setSyncMessage(""), 4000);
-    }
+  const handleReloadCloudCourse = () => {
+    if (cloud) setReloadKey((n) => n + 1);
   };
 
   // Compute stats for each course
@@ -271,7 +275,7 @@ export function CourseJourney({
               </button>
             )}
           </div>
-          {syncMessage && <p className="sync-status-text">{syncMessage}</p>}
+          {syncMessage && <p role="status" className="sync-status-text">{syncMessage}</p>}
         </div>
 
         <div className="hero-banner-panda">
