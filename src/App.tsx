@@ -1,5 +1,8 @@
 import { demo } from "./learning/demo";
-import { CourseBrowser } from "./learning/CourseBrowser";
+import { lesson1a } from "./learning/book1";
+import { lesson1b } from "./learning/book1b";
+import { lesson1c } from "./learning/book1c";
+import { CourseJourney } from "./learning/CourseJourney";
 import { AdminCurriculum, AdminCurriculumLink } from "./admin/AdminCurriculum";
 import { RecallCards } from "./learning/RecallCards";
 import { useEffect, useState } from "react";
@@ -97,8 +100,9 @@ function SectionTitle({
 export default function App() {
   const account = useAccount();
   const [, refreshCurriculum] = useState(0);
+  const bundled = [lesson1a, lesson1b, lesson1c, demo];
   const lessons = [
-    ...(!account.manager && !catalog.some((l) => l.learning) ? [demo] : []),
+    ...bundled.filter((b) => !catalog.some((l) => l.id === b.id)),
     ...catalog,
   ].sort((a, b) => Number(!a.learning) - Number(!b.learning));
   const ids = lessons.map((l) => l.id);
@@ -912,140 +916,19 @@ export default function App() {
             </>
           )}
           {page === "path" && (
-            <>
-              <PageHeading
-                eyebrow="ĐI TỪNG BƯỚC, CHINH PHỤC TỪNG CHẶNG"
-                title="Hành trình của bạn"
-                text="Từ lời chào đầu tiên đến những câu chuyện bằng tiếng Trung."
-              />
-              <CourseBrowser
-                cloud={!!account.manager}
-                onLoaded={() => refreshCurriculum((n) => n + 1)}
-                onStudy={(lesson) =>
-                  canStudy(p, lesson, lessons)
-                    ? start(lesson)
-                    : setPreview(lesson)
-                }
-                isUnlocked={(lesson) => canStudy(p, lesson, lessons)}
-              />
-              <div className="path-layout">
-                <section className="path-map">
-                  <div className="path-map-heading">
-                    <Leaf />
-                    <div>
-                      <b>Rừng tre khởi đầu</b>
-                      <span>
-                        {lessons.filter((l) => l.learning).length} bài trong
-                        giáo trình ·{" "}
-                        {
-                          lessons.filter(
-                            (l) => l.learning && p.completed.includes(l.id),
-                          ).length
-                        }{" "}
-                        chặng hoàn thành
-                      </span>
-                    </div>
-                    <span className="level-pill">{p.goal}</span>
-                  </div>
-                  <div className="path-trail">
-                    {lessons
-                      .filter((l) => l.learning)
-                      .map((l, i) => {
-                        const unlocked = canStudy(p, l, lessons);
-                        const done = p.completed.includes(l.id);
-                        const mastered =
-                          done &&
-                          p.history.filter(
-                            (h) => h.lesson === l.id && h.accuracy >= 0.9,
-                          ).length >= 2;
-                        return (
-                          <div
-                            className={`path-stop stop-${i % 4} ${done ? "completed" : unlocked ? "available" : "locked"}`}
-                            key={l.id}
-                          >
-                            <button
-                              aria-label={`${i + 1}. ${l.title} — ${mastered ? "Đã thành thạo" : done ? "Hoàn thành" : unlocked ? "Có thể học" : "Xem trước bài khóa"}`}
-                              onClick={() => setPreview(l)}
-                            >
-                              {mastered ? (
-                                <Star />
-                              ) : done ? (
-                                <Check />
-                              ) : unlocked ? (
-                                <span>{i + 1}</span>
-                              ) : (
-                                <Lock size={21} />
-                              )}
-                            </button>
-                            <div>
-                              <small>
-                                {l.learning
-                                  ? "GIÁO TRÌNH MỚI"
-                                  : "KHO BÀI MẪU · TÙY CHỌN"}{" "}
-                                · CHẶNG {i + 1} ·{" "}
-                                {mastered
-                                  ? "THÀNH THẠO"
-                                  : done
-                                    ? "HOÀN THÀNH"
-                                    : unlocked
-                                      ? "SẴN SÀNG"
-                                      : "CHƯA MỞ"}
-                              </small>
-                              <h3>{l.title}</h3>
-                              <p>{l.description}</p>
-                            </div>
-                            {i === 0 && <Panda small />}
-                          </div>
-                        );
-                      })}
-                  </div>
-                  <details className="card sample-library">
-                    <summary>Kho 10 bài mẫu cũ · Tùy chọn</summary>
-                    <p>
-                      Các bài mẫu giữ nguyên nội dung và tiến độ cũ. Bạn không
-                      cần hoàn thành kho này để học giáo trình nhập môn.
-                    </p>
-                    {lessons
-                      .filter((l) => !l.learning)
-                      .map((l) => (
-                        <button
-                          className="secondary"
-                          key={l.id}
-                          onClick={() => setPreview(l)}
-                        >
-                          {l.title} ·{" "}
-                          {p.completed.includes(l.id)
-                            ? "Đã hoàn thành"
-                            : canStudy(p, l, lessons)
-                              ? "Có thể học"
-                              : "Xem trước bài khóa"}
-                        </button>
-                      ))}
-                  </details>
-                  <div className="path-end">
-                    <Flag />
-                    <b>Mỗi bước đều đáng tự hào.</b>
-                  </div>
-                </section>
-                <aside>
-                  <section className="card path-info">
-                    <Panda />
-                    <h3>Một lộ trình, từng bước vững vàng</h3>
-                    <p>
-                      Hoàn thành thử thách đạt từ 70% để mở bài kế tiếp. Học lại
-                      đạt 90% hai lần để thành thạo.
-                    </p>
-                    <p>
-                      Đây là lộ trình nền tảng với bài mẫu HSK 1–3, chưa thay
-                      thế trọn bộ giáo trình HSK.
-                    </p>
-                    <button className="primary" onClick={() => start(current)}>
-                      Học bài tiếp theo <ArrowRight size={16} />
-                    </button>
-                  </section>
-                </aside>
-              </div>
-            </>
+            <CourseJourney
+              cloud={!!account.manager}
+              progress={p}
+              allLessons={lessons}
+              onStudy={(lesson) =>
+                canStudy(p, lesson, lessons)
+                  ? start(lesson)
+                  : setPreview(lesson)
+              }
+              onPreview={(lesson) => setPreview(lesson)}
+              isUnlocked={(lesson) => canStudy(p, lesson, lessons)}
+              onRefreshCurriculum={() => refreshCurriculum((n) => n + 1)}
+            />
           )}
           {page === "practice" && (
             <>
