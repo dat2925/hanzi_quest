@@ -10,12 +10,18 @@ Không có nguồn cho bài 1D trở đi trong yêu cầu này. Lô 5 bài `qa-b
 
 ## Bật hệ thống một lần — thao tác thủ công sau khi kiểm tra
 
-1. Kiểm tra/backup theo quy trình của bạn. Chỉ chạy file mới `supabase/migrations/202610130004_curriculum_admin.sql` trong SQL Editor. **Không chạy lại các migration 1A/1B/1C hoặc toàn bộ thư mục.** Migration này độc lập với việc 1C đã publish hay chưa; cần schema/learning_structure hiện đang phục vụ 1A/1B.
+1. Kiểm tra/backup theo quy trình của bạn. Chạy `supabase/migrations/202610130004_curriculum_admin.sql` nếu chưa cài Admin, sau đó chạy `supabase/migrations/202610130005_curriculum_practice_key_compatibility.sql`. Nếu đã cài Admin, chỉ chạy file `005` mới. **Không chạy lại các migration 1A/1B/1C hoặc toàn bộ thư mục.** Các migration này độc lập với việc 1C đã publish hay chưa; cần schema/learning_structure hiện đang phục vụ 1A/1B.
 2. Xác định đúng tài khoản quản trị bằng `auth.users.id` trong Supabase. Trong `supabase/manual/grant_curriculum_admin_after_review.sql`, thay UUID toàn số 0 bằng UUID tài khoản đó rồi chạy. File cố ý từ chối UUID không tồn tại. Không dựa vào email/user_metadata để cấp quyền; người dùng không thể tự nâng quyền bằng chỉnh hồ sơ.
 3. Trên **Render Node service**, giữ các biến public hiện tại `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_APP_URL` (URL website thật). Thêm **server-only** `SUPABASE_SECRET_KEY` từ Supabase hoặc `SUPABASE_SERVICE_ROLE_KEY`. Có thể đặt `SUPABASE_URL` riêng, nếu không dùng URL public hiện có. Tuyệt đối không thêm tiền tố `VITE_` vào secret, không dán secret vào JSON/frontend, Git hoặc chat. Render vẫn chạy `npm run build` rồi `npm run mcp`; API admin được phục vụ cùng origin trên Node server.
 4. Deploy bản hệ thống mới, đăng nhập tài khoản vừa cấp quyền, vào **Cài đặt → Admin Curriculum**. Có thể mở URL website với `?admin=curriculum`; backend vẫn kiểm tra quyền. Nếu thiếu migration/secret sẽ báo cấu hình thiếu, không tự cấp quyền. Bản website host tĩnh không có Node API này.
 
 Để thu hồi quyền, operator chạy thủ công `delete from public.curriculum_admins where user_id='UUID_CẦN_THU_HỒI';`. API/database kiểm tra lại quyền ở mỗi yêu cầu. Không có chức năng để học viên/admin tự cấp quyền qua frontend.
+
+### Sửa lỗi `QUESTION_KEY_CONFLICT` với câu ôn 你好
+
+Dữ liệu mẫu cũ gắn câu ôn nghĩa/Pinyin của `你好` với các mục SRS `你好`, `你`, `好`; importer v2 tạo mục tiêu duy nhất `你好`. Migration `202610130005_curriculum_practice_key_compatibility.sql` cho phép tái sử dụng nguyên câu ôn tự sinh có cùng khóa, loại, lời hỏi, audio và đáp án, dù danh sách mục tiêu khác nhau. Không cập nhật ngân hàng câu hỏi cũ, bài đã xuất bản hay dữ liệu người học. Câu kiểm tra có `contentId` vẫn áp dụng kiểm tra nghiêm ngặt; đáp án khác vẫn bị chặn và giao dịch rollback.
+
+Sau khi kiểm tra và chạy riêng file `005` bằng SQL Editor, tải lại Admin, chọn các bản nháp đã duyệt rồi thử **Chuẩn bị xuất bản → Xác nhận xuất bản**. Không cần xóa/nhập lại bài, đổi ID hay chạy lại migration Admin `004`. Bản sửa chưa được thực thi trên production bởi Codex. Test hồi quy dùng database cô lập tái hiện chính khóa `你好` cũ, kiểm tra đáp án khác bị chặn và ngân hàng câu hỏi/bài cũ được giữ nguyên.
 
 ### Quyền và an toàn
 

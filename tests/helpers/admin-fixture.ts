@@ -94,6 +94,12 @@ export async function adminFixture({ publish1c = true } = {}) {
       "utf8",
     ),
   );
+  await db.exec(
+    readFileSync(
+      "supabase/migrations/202610130005_curriculum_practice_key_compatibility.sql",
+      "utf8",
+    ),
+  );
   await db.query("insert into public.curriculum_admins(user_id) values($1)", [
     adminIds[0],
   ]);

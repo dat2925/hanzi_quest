@@ -9,6 +9,104 @@ import { book1c } from "../src/learning/book1c";
 import { lessons, type Lesson } from "../src/data";
 import { operation, questionKey } from "../src/cloud/operations";
 
+test("legacy 你好 practice targets are reused unchanged; different answers still block publication atomically", async () => {
+  const f = await adminFixture();
+  const b = qaBatch(1);
+  const vocab = b.lessons[0].screens.find((s) => s.kind === "vocabulary")!;
+  vocab.words.push({
+    hanzi: "你好",
+    pinyin: "nǐ hǎo",
+    meaning: "Xin chào",
+    tones: [3, 3],
+    example: { hanzi: "你好", pinyin: "nǐ hǎo", meaning: "Xin chào" },
+  });
+  const key = questionKey({
+    type: "quiz",
+    prompt: "“你好” có nghĩa là gì?",
+    audio: "你好",
+  });
+  const cmd = (data: object) => ({ requestId: crypto.randomUUID(), ...data });
+  const ok = async (path: string, data: object) => {
+    const r = await f.request(path, cmd(data));
+    assert.equal(r.status, 200, JSON.stringify(r.body));
+  };
+  try {
+    const original = (
+      await f.db.query<{ question_json: any }>(
+        "select question_json from private.question_bank where question_key=$1",
+        [key],
+      )
+    ).rows[0].question_json;
+    assert.deepEqual(original.targets, ["你好", "你", "好"]);
+    const oldLessons = (
+      await f.db.query("select * from public.lessons order by id")
+    ).rows;
+    await ok("/save", { bundle: b });
+    const selection = {
+      courseId: b.courseId,
+      ids: [b.lessons[0].id],
+      expected: { [b.lessons[0].id]: 1 },
+    };
+    await ok("/review", {
+      ...selection,
+      sourceChecked: true,
+      previewsChecked: true,
+    });
+    await f.db.exec("reset role;");
+    await f.db.query(
+      "update private.question_bank set question_json=jsonb_set(question_json,'{answer}','\"Different answer\"') where question_key=$1",
+      [key],
+    );
+    const blocked = await f.request("/publish", cmd(selection));
+    assert.match(blocked.body.error, /QUESTION_KEY_CONFLICT/);
+    await f.db.exec("reset role;");
+    assert.deepEqual(
+      (await f.db.query("select * from public.lessons order by id")).rows,
+      oldLessons,
+    );
+    await f.db.query(
+      "update private.question_bank set question_json=$2::jsonb where question_key=$1",
+      [key, JSON.stringify(original)],
+    );
+    await ok("/publish", selection);
+    await f.db.exec("reset role;");
+    assert.deepEqual(
+      (
+        await f.db.query<{ question_json: unknown }>(
+          "select question_json from private.question_bank where question_key=$1",
+          [key],
+        )
+      ).rows[0].question_json,
+      original,
+    );
+    assert.deepEqual(
+      (
+        await f.db.query(
+          "select * from public.lessons where id<>$1 order by id",
+          [b.lessons[0].id],
+        )
+      ).rows,
+      oldLessons,
+    );
+    // The compatibility exception must never apply to an authored assessment.
+    const custom = {
+      key,
+      question: { ...original, contentId: "qa:assessment", targets: ["你好"] },
+    };
+    assert.equal(
+      (
+        await f.db.query<{ compatible: boolean }>(
+          "select private.curriculum_generated_practice($1::jsonb) compatible",
+          [JSON.stringify(custom)],
+        )
+      ).rows[0].compatible,
+      false,
+    );
+  } finally {
+    await f.close();
+  }
+});
+
 test("admin API + database permissions, five-lesson atomic batch, review revisions, retry, immutable published content and existing progress", async () => {
   const f = await adminFixture();
   const command = (data: object) => ({
@@ -99,7 +197,10 @@ test("admin API + database permissions, five-lesson atomic batch, review revisio
     const prepared = prepareBatch(b, catalog, "save");
     const placeholder = structuredClone(b);
     placeholder.lessons[0].screens[0].theory = "Điền lý thuyết trước khi hỏi.";
-    assert.throws(() => prepareBatch(placeholder, catalog, "save"), /placeholder/);
+    assert.throws(
+      () => prepareBatch(placeholder, catalog, "save"),
+      /placeholder/,
+    );
     assert.deepEqual(
       prepared.rows.map((r) => r.id),
       [1, 2, 3, 4, 5].map((n) => `qa-book1-next-${n}`),
