@@ -24,12 +24,27 @@ export class AdminApiError extends Error {
     this.name = "AdminApiError";
   }
 }
+function reportAccessFailure(status: number, code: string, path: string) {
+  if ((status === 401 || status === 403) && path !== "/access")
+    window.dispatchEvent(
+      new CustomEvent("hanzi-admin-access-lost", { detail: { status, code } }),
+    );
+}
+const commandIdentities = new Map<
+  string,
+  { fingerprint: string; id: string }
+>();
 
 async function getAccessToken(): Promise<string> {
   const session = await supabase?.auth.getSession();
   const token = session?.data.session?.access_token;
   if (!token) {
-    throw new AdminApiError(401, "AUTH_REQUIRED", "Hãy đăng nhập tài khoản quản trị.");
+    reportAccessFailure(401, "AUTH_REQUIRED", "/session");
+    throw new AdminApiError(
+      401,
+      "AUTH_REQUIRED",
+      "Hãy đăng nhập tài khoản quản trị.",
+    );
   }
   return token;
 }
@@ -68,7 +83,9 @@ export async function adminFetch<T>(
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const errorCode = typeof body.error === "string" ? body.error : `HTTP_${response.status}`;
+    const errorCode =
+      typeof body.error === "string" ? body.error : `HTTP_${response.status}`;
+    reportAccessFailure(response.status, errorCode, path);
     throw new AdminApiError(response.status, errorCode, errorCode);
   }
 
@@ -82,6 +99,16 @@ export async function adminCommand<A extends AdminAction>(
 ): Promise<AdminCommandResult> {
   const token = await getAccessToken();
   const url = `/api/admin/commands/${action}`;
+  const { requestId, ...values } = payload;
+  const fingerprint = JSON.stringify({ action, values });
+  const old = commandIdentities.get(requestId);
+  const identity =
+    old?.fingerprint === fingerprint
+      ? old
+      : { fingerprint, id: old ? crypto.randomUUID() : requestId };
+  commandIdentities.set(requestId, identity);
+  if (commandIdentities.size > 256)
+    commandIdentities.delete(commandIdentities.keys().next().value!);
 
   const response = await fetch(url, {
     method: "POST",
@@ -91,14 +118,16 @@ export async function adminCommand<A extends AdminAction>(
     },
     credentials: "omit",
     cache: "no-store",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, requestId: identity.id }),
     signal,
   });
 
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const errorCode = typeof body.error === "string" ? body.error : `HTTP_${response.status}`;
+    const errorCode =
+      typeof body.error === "string" ? body.error : `HTTP_${response.status}`;
+    reportAccessFailure(response.status, errorCode, "/commands");
     throw new AdminApiError(response.status, errorCode, errorCode);
   }
 
@@ -117,7 +146,7 @@ export async function checkAdminAccess(signal?: AbortSignal): Promise<{
     return { access, editorOnly: false, status: 200 };
   } catch (err) {
     if (err instanceof AdminApiError) {
-      if (err.status === 403) {
+      if (err.status === 403 || err.code === "ADMIN_MIGRATION_REQUIRED") {
         // Test if user has curriculum editor access
         try {
           const token = await getAccessToken();
@@ -130,15 +159,32 @@ export async function checkAdminAccess(signal?: AbortSignal): Promise<{
           if (editorRes.ok) {
             return { access: null, editorOnly: true, status: 200 };
           }
+          if (editorRes.status !== 403)
+            return {
+              access: null,
+              editorOnly: false,
+              status: editorRes.status === 401 ? 401 : 503,
+              error: "Không xác minh được quyền biên tập. Hãy thử lại.",
+            };
         } catch {
-          // ignore editor test error
+          return {
+            access: null,
+            editorOnly: false,
+            status: 0,
+            error: "Không kết nối được máy chủ để xác minh quyền biên tập.",
+          };
         }
-        return { access: null, editorOnly: false, status: 403, error: err.code };
+        return {
+          access: null,
+          editorOnly: false,
+          status: err.status === 503 ? 503 : 403,
+          error: err.code,
+        };
       }
       return {
         access: null,
         editorOnly: false,
-        status: (err.status as 401 | 403 | 503) || 503,
+        status: err.status === 401 ? 401 : err.status === 503 ? 503 : 0,
         error: err.code,
       };
     }
@@ -148,7 +194,8 @@ export async function checkAdminAccess(signal?: AbortSignal): Promise<{
 
 // Typed API Helpers
 export const AdminApi = {
-  getOverview: (signal?: AbortSignal) => adminFetch<AdminOverview>("/overview", { signal }),
+  getOverview: (signal?: AbortSignal) =>
+    adminFetch<AdminOverview>("/overview", { signal }),
 
   getUsers: (
     params: {
@@ -159,20 +206,32 @@ export const AdminApi = {
       offset?: number;
     },
     signal?: AbortSignal,
-  ) => adminFetch<PageResult<AdminUserRow>>("/users", { query: params, signal }),
+  ) =>
+    adminFetch<PageResult<AdminUserRow>>("/users", { query: params, signal }),
 
-  getUserDetail: (id: string, params?: { limit?: number; offset?: number }, signal?: AbortSignal) =>
-    adminFetch<AdminUserDetail>(`/users/${id}`, { query: params, signal }),
+  getUserDetail: (
+    id: string,
+    params?: { limit?: number; offset?: number },
+    signal?: AbortSignal,
+  ) => adminFetch<AdminUserDetail>(`/users/${id}`, { query: params, signal }),
 
   getCourses: (
     params?: { search?: string; limit?: number; offset?: number },
     signal?: AbortSignal,
-  ) => adminFetch<PageResult<AdminCourseRow>>("/courses", { query: params, signal }),
+  ) =>
+    adminFetch<PageResult<AdminCourseRow>>("/courses", {
+      query: params,
+      signal,
+    }),
 
   getChapters: (
     params: { courseId: string; limit?: number; offset?: number },
     signal?: AbortSignal,
-  ) => adminFetch<PageResult<AdminChapterRow>>("/chapters", { query: params, signal }),
+  ) =>
+    adminFetch<PageResult<AdminChapterRow>>("/chapters", {
+      query: params,
+      signal,
+    }),
 
   getLessons: (
     params?: {
@@ -184,16 +243,44 @@ export const AdminApi = {
       offset?: number;
     },
     signal?: AbortSignal,
-  ) => adminFetch<PageResult<AdminLessonRow>>("/lessons", { query: params, signal }),
+  ) =>
+    adminFetch<PageResult<AdminLessonRow>>("/lessons", {
+      query: params,
+      signal,
+    }),
 
   getAudit: (
     params?: { search?: string; limit?: number; offset?: number },
     signal?: AbortSignal,
-  ) => adminFetch<PageResult<AdminAuditRow>>("/audit", { query: params, signal }),
+  ) =>
+    adminFetch<PageResult<AdminAuditRow>>("/audit", { query: params, signal }),
 };
+export async function allAdminCourses(signal?: AbortSignal) {
+  const items: AdminCourseRow[] = [];
+  for (let offset = 0; ; offset += 100) {
+    const page = await AdminApi.getCourses({ limit: 100, offset }, signal);
+    items.push(...page.items);
+    if (offset + page.items.length >= page.total || !page.items.length)
+      return items;
+  }
+}
+export async function allAdminChapters(courseId: string, signal?: AbortSignal) {
+  const items: AdminChapterRow[] = [];
+  for (let offset = 0; ; offset += 100) {
+    const page = await AdminApi.getChapters(
+      { courseId, limit: 100, offset },
+      signal,
+    );
+    items.push(...page.items);
+    if (offset + page.items.length >= page.total || !page.items.length)
+      return items;
+  }
+}
 
 // Formats dates in Vietnam timezone (Asia/Ho_Chi_Minh)
-export function formatVietnamDateTime(isoString: string | null | undefined): string {
+export function formatVietnamDateTime(
+  isoString: string | null | undefined,
+): string {
   if (!isoString) return "Chưa có";
   try {
     const d = new Date(isoString);
@@ -232,7 +319,7 @@ export function formatAdminErrorMessage(error: unknown): string {
       case "PROFILE_CHANGED":
         return "Hồ sơ người dùng đã có thay đổi mới từ học viên hoặc quản trị viên khác. Vui lòng kiểm tra lại.";
       case "REQUEST_ID_CONFLICT":
-        return "Mã yêu cầu bị trùng lặp với nội dung khác. Đang tạo mã mới.";
+        return "Mã yêu cầu đã được dùng cho nội dung khác. Hãy đóng và mở lại form để gửi yêu cầu mới.";
       case "PUBLISHED_DEPENDENTS_EXIST":
         return "Không thể ẩn bài học này vì đang có bài học đã xuất bản khác phụ thuộc vào nó. Hãy ẩn các bài học phụ thuộc trước.";
       case "DRAFT_DEPENDENTS_EXIST":

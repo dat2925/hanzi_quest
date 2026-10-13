@@ -44,7 +44,7 @@ async function session(
       body: await response.text(),
     });
   });
-  await page.route("**/api/admin/curriculum**", async (route) => {
+  await page.route("**/api/admin/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const response = await fetch(f.apiUrl + url.pathname + url.search, {
@@ -70,7 +70,7 @@ for (const width of [390, 1440])
     page,
   }) => {
     test.setTimeout(120000);
-    const f = await adminFixture();
+    const f = await adminFixture({ platform: true });
     try {
       await page.setViewportSize({ width, height: 900 });
       await session(page, f, adminIds[0]);
@@ -106,13 +106,11 @@ for (const width of [390, 1440])
       await expect(
         page.getByText("hanzione-b1-l01c", { exact: true }),
       ).toBeVisible();
-      await page
-        .getByLabel("File curriculum quản trị")
-        .setInputFiles({
-          name: "qa-book1-batch.json",
-          mimeType: "application/json",
-          buffer: Buffer.from(JSON.stringify(qaBatch())),
-        });
+      await page.getByLabel("File curriculum quản trị").setInputFiles({
+        name: "qa-book1-batch.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(JSON.stringify(qaBatch())),
+      });
       await page.getByRole("button", { name: "Kiểm tra toàn bộ JSON" }).click();
       await expect(
         page.getByRole("status").filter({ hasText: "JSON hợp lệ: 5 bài" }),
@@ -181,17 +179,31 @@ for (const width of [390, 1440])
         ).rows[0].value.progress;
         expect(after).toEqual(before);
       });
+      const adminMenu = page.getByRole("button", {
+        name: "Mở menu quản trị",
+        exact: true,
+      });
+      if (await adminMenu.isVisible()) await adminMenu.click();
+      await page
+        .getByRole("button", { name: "Quay về ứng dụng học", exact: true })
+        .click();
       await page
         .getByRole("button", { name: "Hành trình", exact: true })
         .filter({ visible: true })
         .first()
         .click();
-      await page.getByRole("combobox").selectOption("hanzione-book1-preview");
-      await page.getByRole("button", { name: /^Bài 1 · Chào hỏi/ }).click();
       const fresh = page
-        .getByRole("region", { name: "Danh sách bài trong chương" })
+        .getByRole("region", {
+          name: "Danh sách bài học của HanziOne · Quyển 1",
+          exact: true,
+        })
         .getByRole("article")
-        .filter({ hasText: "[QA ONLY] Lô Quyển 1 · 1" });
+        .filter({
+          has: page.getByRole("heading", {
+            name: "[QA ONLY] Lô Quyển 1 · 1",
+            exact: true,
+          }),
+        });
       await expect(fresh).toBeVisible();
       await fresh.getByRole("button", { name: "Học ngay" }).click();
       await expect(page.getByRole("dialog")).not.toContainText("XEM TRƯỚC");
@@ -204,13 +216,13 @@ for (const width of [390, 1440])
 test("ordinary student cannot open Admin Curriculum or call batch writes", async ({
   page,
 }) => {
-  const f = await adminFixture();
+  const f = await adminFixture({ platform: true });
   try {
     await session(page, f, adminIds[1]);
     await page.goto("/?admin=curriculum");
-    await expect(page.getByRole("alert")).toContainText(
-      "CURRICULUM_ADMIN_REQUIRED",
-    );
+    await expect(
+      page.getByRole("heading", { name: /Truy cập bị từ chối/ }),
+    ).toBeVisible();
     await expect(page.getByLabel("JSON giáo trình")).toHaveCount(0);
     expect(
       (

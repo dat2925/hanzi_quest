@@ -3,7 +3,8 @@ import { lesson1a } from "./learning/book1";
 import { lesson1b } from "./learning/book1b";
 import { lesson1c } from "./learning/book1c";
 import { CourseJourney } from "./learning/CourseJourney";
-import { AdminCurriculum, AdminCurriculumLink } from "./admin/AdminCurriculum";
+import { AdminCurriculumLink } from "./admin/AdminCurriculum";
+import { AdminPlatform } from "./admin/AdminPlatform";
 import { RecallCards } from "./learning/RecallCards";
 import { useEffect, useState } from "react";
 import {
@@ -116,7 +117,7 @@ export default function App() {
     if (manager && !manager.progress.onboarded) setOnboard(true);
   }, [manager]);
   const [page, setPage] = useState(() =>
-    new URLSearchParams(window.location.search).get("admin") === "curriculum"
+    new URLSearchParams(window.location.search).has("admin")
       ? "admin"
       : "home",
   );
@@ -124,6 +125,11 @@ export default function App() {
   useEffect(() => {
     setAdminPreview(null);
   }, [manager?.userId]);
+  useEffect(() => {
+    const clearAdminPreview = () => setAdminPreview(null);
+    window.addEventListener("hanzi-admin-access-lost", clearAdminPreview);
+    return () => window.removeEventListener("hanzi-admin-access-lost", clearAdminPreview);
+  }, []);
   const [game, setGame] = useState<Lesson | null>(null);
   const [practice, setPractice] = useState(false);
   const [preview, setPreview] = useState<Lesson | null>(null);
@@ -441,6 +447,10 @@ export default function App() {
     );
   }
   function changePage(id: string) {
+    const url = new URL(window.location.href);
+    if (id === "admin") url.searchParams.set("admin", "overview");
+    else url.searchParams.delete("admin");
+    window.history.replaceState({}, "", url);
     setPage(id);
     setFlashMode(false);
     setWriteMode(false);
@@ -462,7 +472,7 @@ export default function App() {
     </>
   );
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${page === "admin" ? "admin-mode" : ""}`}>
       <aside className="sidebar">
         <button
           className="brand"
@@ -1502,9 +1512,12 @@ export default function App() {
             </>
           )}
           {page === "admin" && (
-            <AdminCurriculum
+            <AdminPlatform
               key={manager?.userId || "guest"}
-              onPreview={setAdminPreview}
+              onPreviewLesson={setAdminPreview}
+              onBackToApp={() => changePage("home")}
+              dark={p.dark}
+              onToggleTheme={() => patch({ dark: !p.dark })}
             />
           )}
           {page === "settings" && (

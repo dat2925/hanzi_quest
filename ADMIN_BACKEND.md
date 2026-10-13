@@ -1,13 +1,13 @@
 # Backend quản trị HanziOne
 
-Backend Node hiện tại phục vụ `/api/admin/*`; frontend quản trị sẽ được Antigravity xây theo `ANTIGRAVITY_ADMIN_PROMPT.md`. Không có FE mới trong thay đổi này. Types dùng chung ở `src/admin/platform-types.ts`; types biên tập JSON hiện có ở `src/admin/types.ts`.
+Backend Node hiện tại phục vụ `/api/admin/*`; frontend quản trị ở `src/admin/AdminPlatform.tsx` đã nối API cho tổng quan, user, khóa/chương, bài học và nhật ký. Mở `/?admin=overview` hoặc nút Admin trong Cài đặt; `/?admin=curriculum` vẫn mở trình biên tập. Types dùng chung ở `src/admin/platform-types.ts`; types biên tập JSON hiện có ở `src/admin/types.ts`. Prompt thiết kế ban đầu được giữ ở `ANTIGRAVITY_ADMIN_PROMPT.md`.
 
 ## Cài đặt
 
 1. Chạy migrations hiện có theo thứ tự tới `202610130005`, sau đó chạy `supabase/migrations/202610130006_platform_admin.sql` bằng SQL Editor. Migration giữ user, tiến độ và nội dung hiện có; bổ sung bảng quyền, trạng thái tài khoản, nhật ký, revision, policy và wrapper RPC. Không chạy lại migration đã áp dụng.
 2. Thay UUID trong `supabase/manual/grant_platform_admin_after_review.sql` bằng ID tài khoản thật từ Supabase Auth rồi chạy file này để cấp admin đầu tiên. Quyền biên tập cũ không tự nâng thành quyền quản trị user.
 3. Backend cần `SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (hoặc `SUPABASE_SERVICE_ROLE_KEY`), `VITE_APP_URL`. Secret chỉ ở server. Dùng `npm run build` và `npm run mcp`; Vite đã proxy `/api/admin` về cổng 8787.
-4. Triển khai backend mới và frontend khi frontend đã được xây. Các bước SQL/deploy trên production chưa được thực hiện trong phiên Codex này.
+4. Build và triển khai mã nguồn mới để phục vụ cả backend lẫn frontend quản trị. Các bước SQL/deploy trên production chưa được thực hiện trong phiên Codex này.
 
 Mọi request cần `Authorization: Bearer <Supabase access_token>`. POST cần `Content-Type: application/json`. Response có `Cache-Control: no-store`. Nếu gửi Origin phải trùng origin của `VITE_APP_URL`. Không gửi token qua query string. Trả `{ "error": "mã hoặc mô tả" }` khi lỗi.
 

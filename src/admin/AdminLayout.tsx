@@ -17,6 +17,7 @@ import {
 import { Panda } from "../Art";
 import { ProductCredit } from "../ProductCredit";
 import type { AdminAccess } from "./platform-types";
+import { useAdminDialog } from "./use-dialog";
 
 export type AdminTab = "overview" | "users" | "courses" | "lessons" | "audit";
 
@@ -42,8 +43,18 @@ export function AdminLayout({
   children,
 }: AdminLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useAdminDialog(
+    () => setMobileMenuOpen(false),
+    false,
+    mobileMenuOpen,
+    '.admin-sidebar[role="dialog"]',
+  );
 
-  const navItems: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
+  const navItems: {
+    id: AdminTab;
+    label: string;
+    icon: typeof LayoutDashboard;
+  }[] = [
     { id: "overview", label: "Tổng quan", icon: LayoutDashboard },
     { id: "users", label: "Người dùng", icon: Users },
     { id: "courses", label: "Khóa học & Chương", icon: Layers },
@@ -64,7 +75,12 @@ export function AdminLayout({
       )}
 
       {/* Admin Sidebar */}
-      <aside className={`admin-sidebar ${mobileMenuOpen ? "open" : ""}`}>
+      <aside
+        className={`admin-sidebar ${mobileMenuOpen ? "open" : ""}`}
+        role={mobileMenuOpen ? "dialog" : undefined}
+        aria-modal={mobileMenuOpen ? true : undefined}
+        aria-label={mobileMenuOpen ? "Điều hướng quản trị" : undefined}
+      >
         <div className="admin-sidebar-header">
           <div className="admin-brand">
             <div className="admin-logo-mark">
@@ -95,6 +111,7 @@ export function AdminLayout({
               <button
                 key={item.id}
                 className={`admin-nav-item ${isActive ? "active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
                 onClick={() => {
                   onTabChange(item.id);
                   setMobileMenuOpen(false);
@@ -118,10 +135,14 @@ export function AdminLayout({
             <Panda small />
             <div className="actor-info">
               <span className="actor-role">
-                {access?.role === "admin" ? "Toàn quyền hệ thống" : "Biên tập viên"}
+                {access?.role === "admin"
+                  ? "Toàn quyền hệ thống"
+                  : "Biên tập viên"}
               </span>
               <span className="actor-id" title={access?.userId}>
-                {access?.userId ? `${access.userId.slice(0, 8)}...` : "Đang kết nối"}
+                {access?.userId
+                  ? `${access.userId.slice(0, 8)}...`
+                  : "Đang kết nối"}
               </span>
             </div>
           </div>
@@ -144,9 +165,13 @@ export function AdminLayout({
               <Menu size={20} />
             </button>
             <div className="admin-breadcrumb">
-              <span onClick={onBackToApp} className="breadcrumb-link">
+              <button
+                type="button"
+                onClick={onBackToApp}
+                className="breadcrumb-link"
+              >
                 HanziOne
-              </span>
+              </button>
               <ChevronRight size={14} />
               <span>Khu vực Quản trị</span>
               <ChevronRight size={14} />
@@ -158,7 +183,11 @@ export function AdminLayout({
             <button
               className="theme-toggle-btn icon-button"
               onClick={onToggleTheme}
-              title={dark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+              title={
+                dark
+                  ? "Chuyển sang giao diện sáng"
+                  : "Chuyển sang giao diện tối"
+              }
               aria-label="Đổi giao diện"
             >
               {dark ? <Sun size={18} /> : <Moon size={18} />}

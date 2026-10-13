@@ -38,15 +38,19 @@ const empty: AdminCatalog = {
 };
 export function AdminCurriculum({
   onPreview,
+  initialCourseId,
+  initialLessonId,
 }: {
   onPreview: (lesson: Lesson) => void;
+  initialCourseId?: string;
+  initialLessonId?: string;
 }) {
   const account = useAccount();
   const [access, setAccess] = useState<"loading" | "allowed" | "denied">(
     "loading",
   );
   const [catalog, setCatalog] = useState<AdminCatalog>(empty);
-  const [course, setCourse] = useState("");
+  const [course, setCourse] = useState(initialCourseId || "");
   const [editor, setEditor] = useState("");
   const [expected, setExpected] = useState<Record<string, number>>({});
   const [checked, setChecked] = useState<Bundle>();
@@ -90,7 +94,7 @@ export function AdminCurriculum({
       .then(async () => {
         if (!active) return;
         setAccess("allowed");
-        await load("");
+        await load(initialCourseId || "");
       })
       .catch((e) => {
         if (active) {
@@ -135,6 +139,17 @@ export function AdminCurriculum({
     setPreviewsChecked(false);
     setConfirm(false);
   }
+  const openedInitial = useRef(false);
+  useEffect(() => {
+    if (!initialLessonId || openedInitial.current || access !== "allowed")
+      return;
+    const draft = drafts.get(initialLessonId),
+      old = publicRows.get(initialLessonId);
+    if (!draft && !old) return;
+    if (old?.is_published) return;
+    openedInitial.current = true;
+    editing(initialLessonId);
+  }, [catalog, access, initialLessonId]);
   async function previewStored(id: string) {
     const old = publicRows.get(id);
     if (old?.is_published) {

@@ -13,7 +13,11 @@ import {
   FileText,
   UserX,
 } from "lucide-react";
-import { AdminApi, formatAdminErrorMessage, formatVietnamDateTime } from "../api";
+import {
+  AdminApi,
+  formatAdminErrorMessage,
+  formatVietnamDateTime,
+} from "../api";
 import type { AdminOverview, AdminAuditRow } from "../platform-types";
 import type { AdminTab } from "../AdminLayout";
 import { Panda } from "../../Art";
@@ -40,12 +44,7 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
 
     Promise.all([
       AdminApi.getOverview(ac.signal),
-      AdminApi.getAudit({ limit: 5, offset: 0 }, ac.signal).catch(() => ({
-        items: [],
-        total: 0,
-        limit: 5,
-        offset: 0,
-      })),
+      AdminApi.getAudit({ limit: 5, offset: 0 }, ac.signal),
     ])
       .then(([overview, audit]) => {
         if (!ac.signal.aborted) {
@@ -73,7 +72,8 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
         <div>
           <h2 className="admin-page-title">Tổng quan hệ thống</h2>
           <p className="admin-page-subtitle">
-            Số liệu thời gian thực về người học, tiến trình giảng dạy và nội dung HanziOne.
+            Số liệu thời gian thực về người học, tiến trình giảng dạy và nội
+            dung HanziOne.
           </p>
         </div>
         <button
@@ -129,7 +129,9 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
                     <UserX size={12} /> {data.suspendedUsers} tài khoản tạm khóa
                   </span>
                 ) : (
-                  <span className="metric-positive">Tất cả tài khoản đang hoạt động</span>
+                  <span className="metric-positive">
+                    Tất cả tài khoản đang hoạt động
+                  </span>
                 )}
               </div>
             </div>
@@ -144,7 +146,9 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
               </div>
               <div className="metric-value">{data.activeUsers7d}</div>
               <div className="metric-footer">
-                <span>{data.studySessions7d} phiên học hoàn thành trong tuần</span>
+                <span>
+                  {data.studySessions7d} phiên học hoàn thành trong tuần
+                </span>
               </div>
             </div>
 
@@ -174,7 +178,8 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
               <div className="metric-footer">
                 {data.pendingReview > 0 ? (
                   <span className="metric-badge-review">
-                    <Sparkles size={12} /> {data.pendingReview} bài đang chờ duyệt
+                    <Sparkles size={12} /> {data.pendingReview} bài đang chờ
+                    duyệt
                   </span>
                 ) : (
                   <span>Chưa có bài chờ duyệt xuất bản</span>
@@ -191,7 +196,9 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
                 <Panda small />
                 <div>
                   <h3 className="panel-title">Lối tắt tác vụ quản trị</h3>
-                  <p className="panel-desc">Điều hướng nhanh đến các khu vực làm việc chính.</p>
+                  <p className="panel-desc">
+                    Điều hướng nhanh đến các khu vực làm việc chính.
+                  </p>
                 </div>
               </div>
 
@@ -218,7 +225,9 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
                     <BookOpen size={18} />
                     <div>
                       <b>Biên tập & Xuất bản bài học</b>
-                      <span>Kiểm tra JSON 7 màn, duyệt nháp và cập nhật nội dung</span>
+                      <span>
+                        Kiểm tra JSON 7 màn, duyệt nháp và cập nhật nội dung
+                      </span>
                     </div>
                   </div>
                   <ArrowRight size={16} />
@@ -246,7 +255,9 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
                     <History size={18} />
                     <div>
                       <b>Xem toàn bộ Nhật ký hoạt động</b>
-                      <span>Kiểm tra nguồn gốc các thay đổi trong hệ thống</span>
+                      <span>
+                        Kiểm tra nguồn gốc các thay đổi trong hệ thống
+                      </span>
                     </div>
                   </div>
                   <ArrowRight size={16} />
@@ -259,7 +270,9 @@ export function OverviewView({ onNavigate }: OverviewViewProps) {
               <div className="panel-header-row">
                 <div>
                   <h3 className="panel-title">Nhật ký hoạt động gần đây</h3>
-                  <p className="panel-desc">Các lệnh quản trị và biên tập mới nhất.</p>
+                  <p className="panel-desc">
+                    Các lệnh quản trị và biên tập mới nhất.
+                  </p>
                 </div>
                 <button
                   className="admin-btn text-button"
